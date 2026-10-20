@@ -1,0 +1,132 @@
+{
+  "default_model": "glm-flash",
+  "confidence_floor": 0.55,
+  "models": [
+    {
+      "key": "glm-flash",
+      "id": "opencode/glm-5.3-flash-free",
+      "name": "GLM 5.3 Flash (free)",
+      "card": "Szybki darmowy model ogólnego przeznaczenia: rutynowe zadania, poprawki kodu, streszczenia, dobry polski tekst. Rozsądny wybór domyślny.",
+      "runner": "opencode",
+      "tags": ["free", "default"]
+    },
+    {
+      "key": "deepseek-flash",
+      "id": "opencode/deepseek-v4.1-flash-free",
+      "name": "DeepSeek v4.1 Flash (free)",
+      "card": "Programowanie i inżynieria kodu: pisanie, analiza, debugowanie, refaktoryzacja, testy. Szybki i tani.",
+      "runner": "opencode",
+      "tags": ["free", "code"]
+    },
+    {
+      "key": "nemotron-ultra",
+      "id": "opencode/nemotron-3-ultra-free",
+      "name": "NVIDIA Nemotron 3 Ultra 550B (free)",
+      "card": "Najmocniejszy darmowy: trudne rozumowanie, architektura systemów, planowanie, analiza. Najwolniejszy - używaj tylko do naprawdę trudnych zadań.",
+      "runner": "opencode",
+      "tags": ["free", "reasoning"]
+    },
+    {
+      "key": "nemotron-lightning",
+      "id": "opencode/nemotron-3.5-lightning-free",
+      "name": "NVIDIA Nemotron 3.5 Lightning 30B (free)",
+      "card": "Szybkie zadania codzienne wymagające lepszej jakości niż najmniejsze modele: duża przepustowość, krótkie konteksty.",
+      "runner": "opencode",
+      "tags": ["free", "fast"]
+    },
+    {
+      "key": "nemotron-vl",
+      "id": "opencode/nemotron-3.5-super-vl-free",
+      "name": "NVIDIA Nemotron 3.5 Super VL (free)",
+      "card": "Obrazy i dokumenty wizualne: zrzuty ekranu, skany, wykresy, OCR, opisywanie zdjęć (vision).",
+      "runner": "opencode",
+      "tags": ["free", "vision"]
+    },
+    {
+      "key": "longcat",
+      "id": "opencode/longcat-2.5-preview-free",
+      "name": "LongCat 2.5 Preview (free)",
+      "card": "Bardzo długi kontekst: analiza długich dokumentów, logów, wielu plików naraz.",
+      "runner": "opencode",
+      "tags": ["free", "long-context"]
+    },
+    {
+      "key": "minimax-flash",
+      "id": "opencode/minimax-m3.1-flash-free",
+      "name": "MiniMax M3.1 Flash (free)",
+      "card": "Lekkie zadania tekstowe, szybkie odpowiedzi, formatowanie, krótkie analizy.",
+      "runner": "opencode",
+      "tags": ["free", "fast"]
+    },
+    {
+      "key": "mimo-flash",
+      "id": "opencode/mimo-v2.6-flash-free",
+      "name": "MiMo v2.6 Flash (free)",
+      "card": "Najprostsze i najkrótsze zadania: jednozdaniowe odpowiedzi, szybkie pytania, maksymalna szybkość.",
+      "runner": "opencode",
+      "tags": ["free", "fast"]
+    },
+    {
+      "key": "beam",
+      "id": "opencode/beam-free",
+      "name": "Beam (free)",
+      "card": "Research i deep research: wyszukiwanie, synteza wiedzy, raporty z wielu źródeł.",
+      "runner": "opencode",
+      "tags": ["free", "research"]
+    },
+    {
+      "key": "big-pickle",
+      "id": "opencode/big-pickle",
+      "name": "Big Pickle (free)",
+      "card": "Model społecznościowy do kreatywnego pisania, rozmowy i eksperymentów.",
+      "runner": "opencode",
+      "tags": ["free", "creative"]
+    },
+    {
+      "key": "or-free",
+      "id": "openrouter/openrouter/free",
+      "name": "OpenRouter Free",
+      "card": "Automatyczny wybór aktualnie dostępnego darmowego modelu przez OpenRouter; gdy brak wyraźnego faworyta.",
+      "runner": "opencode",
+      "tags": ["free", "fallback"]
+    },
+    {
+      "key": "nim-nemotron-70b",
+      "id": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "name": "Llama 3.1 Nemotron 70B (NIM, własny klucz)",
+      "card": "Model 70B przez własny klucz NVIDIA NIM: poważne rozumowanie, analiza i kod, gdy darmowe endpointy opencode nie wystarczają; bez limitów i kolejek opencode.",
+      "runner": "direct",
+      "provider": "nvidia",
+      "model": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "tags": ["direct", "reasoning"]
+    },
+    {
+      "key": "nim-glm-flash",
+      "id": "nvidia/z-ai/glm-5.3-flash",
+      "name": "GLM 5.3 Flash (NIM, własny klucz)",
+      "card": "Ten sam profil co darmowy GLM Flash, ale przez własny klucz NIM: stabilny, do zadań, które nie mogą czekać na darmowy endpoint.",
+      "runner": "direct",
+      "provider": "nvidia",
+      "model": "z-ai/glm-5.3-flash",
+      "tags": ["direct", "default"]
+    },
+    {
+      "key": "nim-deepseek-flash",
+      "id": "nvidia/deepseek-ai/deepseek-v4.1-flash",
+      "name": "DeepSeek v4.1 Flash (NIM, własny klucz)",
+      "card": "Szybkie zadania programistyczne przez własny klucz NIM: gdy limit darmowego endpointu opencode się wyczerpie.",
+      "runner": "direct",
+      "provider": "nvidia",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "tags": ["direct", "code"]
+    },
+    {
+      "key": "qwen-local",
+      "id": "ollama/qwen3.8:27b",
+      "name": "Qwen 3.8 27B lokalnie (Ollama)",
+      "card": "Działa offline na laptopie, pełna prywatność. Krótki kontekst 8k, wolny na tym sprzęcie. Uwaga: wymaga wcześniejszego pobrania do Ollamy.",
+      "runner": "opencode",
+      "tags": ["local"]
+    }
+  ]
+}

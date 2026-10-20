@@ -1,0 +1,397 @@
+{
+  "default_model": "glm-flash",
+  "confidence_floor": 0.55,
+  "models": [
+    {
+      "key": "glm-flash",
+      "id": "opencode/glm-5.3-flash-free",
+      "name": "GLM-5.3-Flash Free",
+      "card": "Kontekst: 200k, wyjście: 32k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo; PDF; strukturalne wyjścia (JSON). Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "default"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 200000,
+        "output": 32000,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)",
+          "wideo",
+          "PDF",
+          "strukturalne wyjścia (JSON)"
+        ],
+        "canonical_model_id": "zhipuai/glm-5.3-flash",
+        "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks"
+      }
+    },
+    {
+      "key": "deepseek-flash",
+      "id": "opencode/deepseek-v4.1-flash-free",
+      "name": "DeepSeek V4.1 Flash Free",
+      "card": "Kontekst: 200k, wyjście: 32k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON). DeepSeek V4.1 Flash model for reasoning and agentic coding",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "code"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 200000,
+        "output": 32000,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)",
+          "strukturalne wyjścia (JSON)"
+        ],
+        "canonical_model_id": "deepseek/deepseek-v4.1-flash",
+        "description_full": "DeepSeek V4.1 Flash model for reasoning and agentic coding"
+      }
+    },
+    {
+      "key": "nemotron-ultra",
+      "id": "opencode/nemotron-3-ultra-free",
+      "name": "Nemotron 3 Ultra Free",
+      "card": "Kontekst: 1000k, wyjście: 128k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling). Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "reasoning"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 1000000,
+        "output": 128000,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)"
+        ],
+        "canonical_model_id": "nvidia/nemotron-3-ultra-550b-a55b",
+        "description_full": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy"
+      }
+    },
+    {
+      "key": "nemotron-lightning",
+      "id": "opencode/nemotron-3.5-lightning-free",
+      "name": "Nemotron 3.5 Lightning Free",
+      "card": "Kontekst: 262k, wyjście: 262k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON). Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "fast"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 262144,
+        "output": 262144,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "strukturalne wyjścia (JSON)"
+        ],
+        "canonical_model_id": "nvidia/nemotron-3.5-lightning",
+        "description_full": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads"
+      }
+    },
+    {
+      "key": "nemotron-vl",
+      "id": "opencode/nemotron-3.5-super-vl-free",
+      "name": "Nemotron 3.5 Super VL Free",
+      "card": "Kontekst: 1048k, wyjście: 131k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision). NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "vision"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 1048576,
+        "output": 131072,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)"
+        ],
+        "canonical_model_id": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "description_full": "NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use"
+      }
+    },
+    {
+      "key": "longcat",
+      "id": "opencode/longcat-2.5-preview-free",
+      "name": "LongCat 2.5 Preview Free",
+      "card": "Kontekst: 1000k, wyjście: 131k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision). Meituan's multimodal reasoning model for coding and agent tasks, with image understanding and a 1M-token context window",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "long-context"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 1000000,
+        "output": 131072,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)"
+        ],
+        "canonical_model_id": "meituan/longcat-2.5-preview",
+        "description_full": "Meituan's multimodal reasoning model for coding and agent tasks, with image understanding and a 1M-token context window"
+      }
+    },
+    {
+      "key": "minimax-flash",
+      "id": "opencode/minimax-m3.1-flash-free",
+      "name": "MiniMax M3.1 Flash Free",
+      "card": "Kontekst: 1000k, wyjście: 512k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo. Frontier multimodal coding model with 1M context window and tunable thinking depth",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "fast"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 1000000,
+        "output": 512000,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)",
+          "wideo"
+        ],
+        "canonical_model_id": "minimax/MiniMax-M3.1-Flash",
+        "description_full": "Frontier multimodal coding model with 1M context window and tunable thinking depth"
+      }
+    },
+    {
+      "key": "mimo-flash",
+      "id": "opencode/mimo-v2.6-flash-free",
+      "name": "MiMo-V2.6-Flash Free",
+      "card": "Kontekst: 200k, wyjście: 32k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo. MiMo Flash model for multimodal coding agents and long-context automation",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "fast"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 200000,
+        "output": 32000,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)",
+          "wideo"
+        ],
+        "canonical_model_id": "xiaomi/mimo-v2.6-flash",
+        "description_full": "MiMo Flash model for multimodal coding agents and long-context automation"
+      }
+    },
+    {
+      "key": "beam",
+      "id": "opencode/beam-free",
+      "name": "Beam Free",
+      "card": "Kontekst: 1048k, wyjście: 131k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON). Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "research"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 1048576,
+        "output": 131072,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "strukturalne wyjścia (JSON)"
+        ],
+        "canonical_model_id": "reflection/beam-1.0-501b-a23b",
+        "description_full": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows"
+      }
+    },
+    {
+      "key": "big-pickle",
+      "id": "opencode/big-pickle",
+      "name": "Big Pickle",
+      "card": "Kontekst: 200k, wyjście: 32k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON). Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "creative"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 200000,
+        "output": 32000,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "strukturalne wyjścia (JSON)"
+        ],
+        "canonical_model_id": null,
+        "description_full": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+      }
+    },
+    {
+      "key": "or-free",
+      "id": "openrouter/openrouter/free",
+      "name": "Free Models Router",
+      "card": "Kontekst: 200k, wyjście: 8k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON). Multimodal reasoning model for visual analysis, planning, and tool use",
+      "runner": "opencode",
+      "tags": [
+        "free",
+        "fallback"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 200000,
+        "output": 8000,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)",
+          "strukturalne wyjścia (JSON)"
+        ],
+        "canonical_model_id": null,
+        "description_full": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    },
+    {
+      "key": "nim-nemotron-70b",
+      "id": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "name": "Llama 3.1 Nemotron 70B Instruct",
+      "card": "Kontekst: 128k, wyjście: 8k. Darmowy (0 zł). Możliwości: narzędzia (function calling). Nemotron model for efficient reasoning, coding, and specialized AI agents",
+      "runner": "direct",
+      "provider": "nvidia",
+      "model": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "tags": [
+        "direct",
+        "reasoning"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 128000,
+        "output": 8192,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "narzędzia (function calling)"
+        ],
+        "canonical_model_id": "nvidia/llama-3.1-nemotron-70b-instruct",
+        "description_full": "Nemotron model for efficient reasoning, coding, and specialized AI agents"
+      }
+    },
+    {
+      "key": "nim-glm-flash",
+      "id": "nvidia/z-ai/glm-5.3-flash",
+      "name": "GLM-5.3-Flash",
+      "card": "Kontekst: 1000k, wyjście: 131k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo; PDF; strukturalne wyjścia (JSON). Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+      "runner": "direct",
+      "provider": "nvidia",
+      "model": "z-ai/glm-5.3-flash",
+      "tags": [
+        "direct",
+        "default"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 1000000,
+        "output": 131072,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)",
+          "wideo",
+          "PDF",
+          "strukturalne wyjścia (JSON)"
+        ],
+        "canonical_model_id": "zhipuai/glm-5.3-flash",
+        "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks"
+      }
+    },
+    {
+      "key": "nim-deepseek-flash",
+      "id": "nvidia/deepseek-ai/deepseek-v4.1-flash",
+      "name": "DeepSeek V4.1 Flash",
+      "card": "Kontekst: 1000k, wyjście: 384k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON). DeepSeek V4.1 Flash model for reasoning and agentic coding",
+      "runner": "direct",
+      "provider": "nvidia",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "tags": [
+        "direct",
+        "code"
+      ],
+      "meta": {
+        "card_source": "models.dev",
+        "fetched": "2026-10-20 05:42",
+        "context": 1000000,
+        "output": 384000,
+        "cost_input": 0,
+        "cost_output": 0,
+        "capabilities": [
+          "głębokie rozumowanie",
+          "narzędzia (function calling)",
+          "obrazy (vision)",
+          "strukturalne wyjścia (JSON)"
+        ],
+        "canonical_model_id": "deepseek/deepseek-v4.1-flash",
+        "description_full": "DeepSeek V4.1 Flash model for reasoning and agentic coding"
+      }
+    },
+    {
+      "key": "qwen-local",
+      "id": "ollama/qwen3.8:27b",
+      "name": "Qwen 3.8 27B lokalnie (Ollama)",
+      "card": "Działa offline na laptopie, pełna prywatność. Krótki kontekst 8k, wolny na tym sprzęcie. Uwaga: wymaga wcześniejszego pobrania do Ollamy.",
+      "runner": "opencode",
+      "tags": [
+        "local"
+      ],
+      "meta": {
+        "card_source": "manual"
+      }
+    }
+  ]
+}
