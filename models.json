@@ -285,7 +285,7 @@
     },
     {
       "key": "nim-nemotron-70b",
-      "id": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "id": "nvidia/nvidia/llama-3.1-nemotron-70b-instruct",
       "name": "Llama 3.1 Nemotron 70B Instruct",
       "card": "Model 70B przez własny klucz NVIDIA NIM: poważne rozumowanie, analiza i kod, gdy darmowe endpointy opencode nie wystarczają; bez limitów i kolejek opencode.",
       "runner": "direct",
@@ -305,7 +305,8 @@
         ],
         "canonical_model_id": "nvidia/llama-3.1-nemotron-70b-instruct",
         "description_full": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
-        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)",
+        "id_source": "kilo models nvidia (7.8.15)"
       }
     },
     {
@@ -335,7 +336,8 @@
         ],
         "canonical_model_id": "zhipuai/glm-5.3-flash",
         "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
-        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)",
+        "id_source": "kilo models nvidia (7.8.15)"
       }
     },
     {
@@ -363,7 +365,8 @@
         ],
         "canonical_model_id": "deepseek/deepseek-v4.1-flash",
         "description_full": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
-        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)",
+        "id_source": "kilo models nvidia (7.8.15)"
       }
     },
     {
