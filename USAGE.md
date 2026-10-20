@@ -145,6 +145,9 @@ through routerd. Hence the micro budget by default:
 - Seed: current `INSTRUCTIONS` + all 15 cards (`card:<key>` components)
 - Output: `opt/gepa_result/result.json` — the best candidate is an **artifact**, never applied to
   `models.json` automatically; review it, paste what you accept, and re-measure (`run_experiments.py`)
+- **OOM note:** on this machine the run can get killed mid-loop (heavy swap); it always resumes from
+  `opt/gepa_result/gepa_state.bin` — just launch the same command again (checkpoints accumulate), or run
+  it overnight. Progress lives in `opt/gepa_result/live.log`
 - Scaling up: more `--tasks`, more `--max-metric-calls`, and/or a faster reflection LLM —
   swap `reflect_via_routerd` for a paid API call (a few cents per run)
 
