@@ -372,7 +372,7 @@
     {
       "key": "qwen-local",
       "id": "ollama/qwen3.8:27b",
-      "name": "Qwen 3.8 27B lokalnie (Ollama)",
+      "name": "Qwen 3.8 27B (Ollama, local)",
       "card": "Runs offline on the laptop, fully private. Short 8k context, slow on this machine. Note: must be pulled into Ollama first.",
       "runner": "opencode",
       "tags": [

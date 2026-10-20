@@ -2,6 +2,7 @@
 # secrets — never commit
 providers.json
 providers.*.json
+settings.json
 .env
 .env.*
 *.env
@@ -19,6 +20,9 @@ __pycache__/
 
 # experiments scratch (resumable progress snapshots)
 experiments/results/progress_*
+opt/gepa_result/gepa_state.bin
+opt/gepa_result/live.log
+opt/gepa_result/generated_best_outputs_valset/
 
 # os / editor junk
 .DS_Store

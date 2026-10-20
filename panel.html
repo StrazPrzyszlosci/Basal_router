@@ -33,6 +33,18 @@ on 127.0.0.1 only. The Test button sends a one-token request to the provider's p
 contains free and local models only.</p>
 <div id="providers"></div>
 <div class="card">
+<h2>settings</h2>
+<div class="url">Applies from the next request — no restart needed. Empty floor = the models.json value (0.55).</div>
+<div class="row">
+  <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="s-footer" checked> answer footer (which model + why)</label>
+  <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="s-log" checked> log decisions</label>
+  <label style="display:flex;gap:6px;align-items:center">confidence floor
+    <input type="number" id="s-floor" step="0.05" min="0" max="1" style="width:90px" placeholder="0.55"></label>
+  <button class="ghost" onclick="saveSettings()">Save</button>
+</div>
+<div class="status" id="settings-status"></div>
+</div>
+<div class="card">
 <h2>add a provider (OpenAI-compatible)</h2>
 <div class="url">Creates a new entry in providers.json; wire models to it in models.json with the "provider" field and "runner": "direct".</div>
 <div class="row">
@@ -100,7 +112,27 @@ async function addProvider() {
     await refresh();
   } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
 }
+async function loadSettings() {
+  const s = (await (await fetch("/panel/api/settings")).json()).settings;
+  document.getElementById("s-footer").checked = !!s.answer_footer;
+  document.getElementById("s-log").checked = !!s.log_decisions;
+  document.getElementById("s-floor").value = s.confidence_floor ?? "";
+}
+async function saveSettings() {
+  const st = document.getElementById("settings-status");
+  try {
+    const floor = parseFloat(document.getElementById("s-floor").value);
+    const body = {answer_footer: document.getElementById("s-footer").checked,
+                  log_decisions: document.getElementById("s-log").checked};
+    if (!isNaN(floor)) body.confidence_floor = floor;
+    const r = await fetch("/panel/api/settings", {method: "POST", headers: {"x-panel": "1", "content-type": "application/json"}, body: JSON.stringify(body)});
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    st.innerHTML = '<span class="ok">saved — applies from the next request</span>';
+    await loadSettings();
+  } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
+}
 refresh();
+loadSettings();
 </script>
 </body>
 </html>
