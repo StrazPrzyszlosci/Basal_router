@@ -8,10 +8,13 @@
         "/media/magazyn/home/teresa/Dokumenty/HYC/basal/router_mcp.py"
       ],
       "enabled": true,
-      "timeout": 300000
+      "timeout": 300000,
+      "environment": { "BASAL_ROUTER_POOL": "registry" }
     }
   },
   "permission": {
+    "kilo-router_recommend": "allow",
+    "kilo-router_pool": "allow",
     "kilo-router_route": "allow",
     "kilo-router_models": "allow",
     "kilo-router_run": "ask"

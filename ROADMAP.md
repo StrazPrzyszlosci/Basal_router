@@ -88,7 +88,8 @@ Port 8788, bo 8787 zajęty przez Hermes WebUI (`~/.hermes/hermes-webui/server.py
 | Katalog modeli z benchmarkami | następny krok (sync models.dev / OpenRouter) |
 | Scheduler limitów RPM/TPM, 429 + Retry-After | do zrobienia |
 | Uczenie się wydajności (opóźnienia, błędy, jakość) | zbieranie od dziś (decisions.jsonl) → GEPA/kalibracja |
-| Panel WWW (FastAPI + SQLite) | do zrobienia |
+| Panel WWW — klucze providerów | **działa** (`/panel` w routerd: zapis chmod 600, maskowanie, test klucza, dodawanie providerów) |
+| Panel WWW — historia, limity, statystyki | do zrobienia (FastAPI + SQLite) |
 | LiteLLM ≥1.83.9 | odroczone: NIM/OpenRouter/Groq/Cerebras są OpenAI-compat (wystarcza httpx); rozważyć przy providerach niekompatybilnych lub złożonych fallbackach |
 | Blokada płatnych wywołań | rejestr zawiera tylko darmowe/własne; egzekwowanie per-provider w fazie schedulerowej |
 
@@ -146,3 +147,8 @@ retry z mocniejszym modelem gdy verify odrzuci. Plus równoległe ścieżki
 - Ulubione modeli Kilo nie są zapisane w `kilo.json` (to stan UI) — są w `models.json`;
   modele bramy Kilo dodaj z `runner: "kilo"` (route je wskaże, przełączenie ręczne).
 - `qwen-local` wymaga pobrania do Ollamy (`ollama pull`), obecnie w Ollamie jest tylko basal.
+- Kilo Code **nie ma natywnego routera modeli** (grep po rozszerzeniu 7.8.15: zero wystąpień
+  modelRouting/modelRouter/fallbackModel/autoModel; w SDK tylko pole `small_model`). Routing, który widać
+  w pickerze Kilo w tym katalogu, to nasz `router/auto`. Kod rozszerzenia jest open source (MIT,
+  github.com/Kilo-Org/kilocode), ale nie ma w nim logiki decyzyjnej wartej przenoszenie — kierunek integracji
+  jest odwrotny: to Kilo konsumuje naszego routera (provider baseURL + MCP).

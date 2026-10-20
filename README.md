@@ -17,6 +17,7 @@ aplikacje (Kilo / opencode / hermes / cokolwiek OpenAI-compat)
 | Plik | Rola |
 |---|---|
 | `routerd.py` | endpoint OpenAI-compat (`/v1/chat/completions`, `/v1/models`); routing + fallback |
+| `panel.html`, `/panel` | panel WWW kluczy providerów: http://127.0.0.1:8788/panel (zapis, maskowanie, test klucza) |
 | `router.py` | decyzje przez basal, wykonanie, log decyzji, CLI (`route`/`models`/`annotate`) |
 | `router_mcp.py` | serwer MCP `kilo-router` (route/models/run) |
 | `models.json` | rejestr produkcyjny: karty **hybrydowe** (rola + fakty z models.dev), runnery; max 20 opcji |

@@ -7,19 +7,25 @@ odpowiedź w formacie OpenAI. model="router/free-best" = pełny routing,
 model="router/<klucz z models.json>" = wymuszenie konkretnego modelu.
 """
 import json
+import os
+import re
 import time
 import uuid
+from pathlib import Path
 
+import httpx
 import uvicorn
 from starlette.applications import Starlette
 from starlette.concurrency import run_in_threadpool
-from starlette.responses import JSONResponse, StreamingResponse
+from starlette.responses import HTMLResponse, JSONResponse, StreamingResponse
 from starlette.routing import Route
 
 import router
 
 PORT = 8788
 VIRTUAL_MODEL = "router/auto"
+PANEL_HTML = Path(__file__).resolve().parent / "panel.html"
+NAME_RE = re.compile(r"^[a-z0-9-]{1,32}$")
 
 
 def task_from_messages(messages):
@@ -126,10 +132,122 @@ async def chat_completions(request):
     return JSONResponse(payload)
 
 
+def panel_guard(request):
+    host = request.headers.get("host", "")
+    if not any(host.startswith(h) for h in ("127.0.0.1", "localhost", "[::1]")):
+        return False
+    if request.method == "POST" and request.headers.get("x-panel") != "1":
+        return False
+    return True
+
+
+def mask_key(key):
+    if not key:
+        return ""
+    if len(key) > 8:
+        return "*" * (len(key) - 4) + key[-4:]
+    return "*" * len(key)
+
+
+def save_providers(providers):
+    router.PROVIDERS_PATH.write_text(json.dumps(providers, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    os.chmod(router.PROVIDERS_PATH, 0o600)
+
+
+def provider_state(name, cfg, registry):
+    return {"name": name, "baseURL": cfg.get("baseURL", ""), "hasKey": bool(cfg.get("apiKey")),
+            "keyMask": mask_key(cfg.get("apiKey", "")), "probe_model": cfg.get("probe_model", ""),
+            "models": [m["key"] for m in registry if m.get("provider") == name]}
+
+
+async def panel_page(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    return HTMLResponse(PANEL_HTML.read_text(encoding="utf-8"))
+
+
+async def panel_state(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    registry = router.load_registry()["models"]
+    return JSONResponse({"providers": [
+        provider_state(name, cfg, registry)
+        for name, cfg in router.load_providers().items() if not name.startswith("_")]})
+
+
+async def panel_add_provider(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    body = await request.json()
+    name = str(body.get("name", "")).strip().lower()
+    if not NAME_RE.match(name):
+        return JSONResponse({"error": "nazwa: małe litery, cyfry, myślnik (max 32)"}, status_code=400)
+    providers = router.load_providers()
+    if name in providers:
+        return JSONResponse({"error": "dostawca już istnieje"}, status_code=409)
+    providers[name] = {"baseURL": str(body.get("baseURL", "")).strip(),
+                      "apiKey": "", "probe_model": str(body.get("probe_model", "")).strip()}
+    save_providers(providers)
+    return JSONResponse(provider_state(name, providers[name], router.load_registry()["models"]))
+
+
+async def panel_save_provider(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    name = request.path_params["name"]
+    if not NAME_RE.match(name):
+        return JSONResponse({"error": "zła nazwa"}, status_code=400)
+    body = await request.json()
+    providers = router.load_providers()
+    if name not in providers:
+        return JSONResponse({"error": "nieznany dostawca"}, status_code=404)
+    providers[name]["apiKey"] = str(body.get("apiKey", ""))
+    if str(body.get("baseURL", "")).strip():
+        providers[name]["baseURL"] = str(body["baseURL"]).strip()
+    if str(body.get("probe_model", "")).strip():
+        providers[name]["probe_model"] = str(body["probe_model"]).strip()
+    save_providers(providers)
+    return JSONResponse(provider_state(name, providers[name], router.load_registry()["models"]))
+
+
+async def panel_test_provider(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    name = request.path_params["name"]
+    cfg = router.load_providers().get(name) or {}
+    if not cfg.get("apiKey"):
+        return JSONResponse({"ok": False, "error": "brak zapisanego klucza"})
+    registry = router.load_registry()["models"]
+    probe = cfg.get("probe_model") or next(
+        (m.get("model", m["id"]) for m in registry if m.get("provider") == name), None)
+    if not probe:
+        return JSONResponse({"ok": False, "error": "brak probe_model — ustaw go w providers.json"})
+    start = time.time()
+    try:
+        response = httpx.post(
+            f"{cfg['baseURL'].rstrip('/')}/chat/completions",
+            headers={"Authorization": f"Bearer {cfg['apiKey']}"},
+            json={"model": probe, "messages": [{"role": "user", "content": "ping"}], "max_tokens": 1},
+            timeout=30,
+        )
+    except Exception as exc:
+        return JSONResponse({"ok": False, "error": str(exc)[:200]})
+    latency = round((time.time() - start) * 1000)
+    if response.status_code == 200:
+        return JSONResponse({"ok": True, "model": probe, "latency_ms": latency})
+    return JSONResponse({"ok": False, "model": probe, "status": response.status_code,
+                         "error": response.text[:200], "latency_ms": latency})
+
+
 app = Starlette(routes=[
     Route("/v1/models", list_models),
     Route("/v1/chat/completions", chat_completions, methods=["POST"]),
     Route("/health", health),
+    Route("/panel", panel_page),
+    Route("/panel/api/state", panel_state),
+    Route("/panel/api/providers", panel_add_provider, methods=["POST"]),
+    Route("/panel/api/providers/{name}", panel_save_provider, methods=["POST"]),
+    Route("/panel/api/providers/{name}/test", panel_test_provider, methods=["POST"]),
 ])
 
 

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Basal Router — klucze providerów</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { color-scheme: dark; }
+body { font: 15px/1.45 system-ui, sans-serif; background: #0f1115; color: #d7dae0; margin: 0; padding: 32px; }
+main { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+p.sub { color: #8a909c; margin: 0 0 24px; font-size: 13px; }
+.card { background: #171a21; border: 1px solid #262b36; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+.card h2 { font-size: 15px; margin: 0 0 2px; text-transform: lowercase; }
+.card .url { color: #8a909c; font-size: 12px; margin-bottom: 10px; word-break: break-all; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+input { background: #0f1115; border: 1px solid #2c3240; color: #d7dae0; border-radius: 7px; padding: 8px 10px; font-size: 13px; }
+input.key { flex: 1; min-width: 220px; }
+button { background: #2456c4; border: 0; color: #fff; border-radius: 7px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+button.ghost { background: #262b36; }
+.status { font-size: 12.5px; margin-top: 10px; min-height: 18px; }
+.ok { color: #5ec26a; } .err { color: #e06c5e; }
+.chips { margin-top: 8px; }
+.chip { display: inline-block; background: #262b36; border-radius: 5px; padding: 2px 8px; font-size: 11.5px; margin: 2px 4px 2px 0; }
+.note { color: #8a909c; font-size: 12.5px; margin-top: 26px; border-top: 1px solid #262b36; padding-top: 14px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Basal Router — klucze providerów</h1>
+<p class="sub">Klucze zapisują się do <code>providers.json</code> (chmod&nbsp;600, poza repo). Panel słucha tylko na 127.0.0.1.
+Test wykonuje jednokenzowe zapytanie do modelu probe danego dostawcy. Rejestr zawiera wyłącznie modele darmowe i lokalne.</p>
+<div id="providers"></div>
+<div class="card">
+<h2>dodaj dostawcę (OpenAI-compatible)</h2>
+<div class="url">Nowy wpis w providers.json; modele podpinasz w models.json polami "provider" i "runner": "direct".</div>
+<div class="row">
+  <input id="n-name" placeholder="nazwa (np. groq)" style="width:150px">
+  <input id="n-url" placeholder="https://.../v1" style="flex:1;min-width:200px">
+  <input id="n-probe" placeholder="model probe (opcjonalnie)" style="width:210px">
+  <button class="ghost" onclick="addProvider()">Dodaj</button>
+</div>
+<div class="status" id="add-status"></div>
+</div>
+<p class="note">Bezpieczeństwo: klucze maskowane w API panelu, nigdy nie logowane; zapis chroniony nagłówkiem x-panel
+(przed CSRF) i sprawdzeniem Hosta (przed DNS-rebinding). Panel działa tylko lokalnie — nie wystawiaj go poza 127.0.0.1.</p>
+</main>
+<script>
+async function api(path, body) {
+  const r = await fetch(path, {method: "POST", headers: {"x-panel": "1", "content-type": "application/json"}, body: JSON.stringify(body || {})});
+  if (!r.ok) throw new Error((await r.json()).error || r.status);
+  return r.json();
+}
+function card(p) {
+  return `<div class="card" id="card-${p.name}">
+    <h2>${p.name}</h2>
+    <div class="url">${p.baseURL}${p.probe_model ? " · probe: " + p.probe_model : ""}</div>
+    <div class="row">
+      <input class="key" type="password" id="key-${p.name}" placeholder="${p.hasKey ? "klucz zapisany: " + p.keyMask : "wklej klucz API"}">
+      <button onclick="save('${p.name}')">Zapisz</button>
+      <button class="ghost" onclick="test('${p.name}')">Test</button>
+    </div>
+    <div class="status" id="st-${p.name}">${p.hasKey ? '<span class="ok">klucz zapisany (' + p.keyMask + ')</span>' : '<span class="err">brak klucza</span>'}</div>
+    ${p.models.length ? '<div class="chips">' + p.models.map(m => `<span class="chip">${m}</span>`).join("") + "</div>" : ""}
+  </div>`;
+}
+async function refresh() {
+  const s = await (await fetch("/panel/api/state")).json();
+  document.getElementById("providers").innerHTML = s.providers.map(card).join("");
+}
+async function save(name) {
+  const el = document.getElementById("st-" + name);
+  el.textContent = "zapisywanie…";
+  try {
+    await api("/panel/api/providers/" + name, {apiKey: document.getElementById("key-" + name).value});
+    document.getElementById("key-" + name).value = "";
+    await refresh();
+  } catch (e) { el.innerHTML = `<span class="err">${e}</span>`; }
+}
+async function test(name) {
+  const el = document.getElementById("st-" + name);
+  el.textContent = "test…";
+  try {
+    const t = await api(`/panel/api/providers/${name}/test`);
+    el.innerHTML = t.ok ? `<span class="ok">OK · ${t.model} · ${t.latency_ms} ms</span>`
+                         : `<span class="err">BŁĄD ${t.status || ""} ${t.error || ""}</span>`;
+  } catch (e) { el.innerHTML = `<span class="err">${e}</span>`; }
+}
+async function addProvider() {
+  const st = document.getElementById("add-status");
+  try {
+    await api("/panel/api/providers", {
+      name: document.getElementById("n-name").value,
+      baseURL: document.getElementById("n-url").value,
+      probe_model: document.getElementById("n-probe").value});
+    st.innerHTML = '<span class="ok">dodano</span>';
+    ["n-name", "n-url", "n-probe"].forEach(i => document.getElementById(i).value = "");
+    await refresh();
+  } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
+}
+refresh();
+</script>
+</body>
+</html>
