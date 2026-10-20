@@ -23,9 +23,9 @@ Kilo Code (agents, /route) ──MCP stdio──> router_mcp.py
 
 ```bash
 ~/basal-env/bin/python router.py route "fix a bug: a bash loop never ends"
-~/basel-env/bin/python router.py models
-~/basel-env/bin/python router.py annotate        # fill gold in decisions.jsonl
-~/basel-env/bin/python experiments/run_experiments.py report   # regenerate RESULTS.md from eval files
+~/basal-env/bin/python router.py models
+~/basal-env/bin/python router.py annotate        # fill gold in decisions.jsonl
+~/basal-env/bin/python experiments/run_experiments.py report   # regenerate RESULTS.md from eval files
 ```
 
 In Kilo Code (after a session restart in this directory): `/route <task>` or the `kilo-router_*` tools.
@@ -113,6 +113,11 @@ verify rejects; plus parallel paths (two models, then basal `score` picks the be
 - long context: basal sees a trimmed task description (head+tail); the full text goes to the target model
 
 Run: `~/basal-env/bin/python routerd.py` (local service, 127.0.0.1 only, keys never logged).
+
+**opencode-only models:** the `opencode/*` free models have no direct API — in any harness other than
+opencode they can be used only through the `opencode` CLI. routerd (and the `kilo-router_run` tool) are
+that bridge: other harnesses reach them via `router/auto`; inside opencode, `recommend` returns a native
+`/model` id and the registry ids match `opencode models`.
 
 **Keys**: `providers.json` (chmod 600, never commit) — `{name: {baseURL, apiKey}}`; empty apiKey disables
 a provider. The web panel manages them at http://127.0.0.1:8788/panel (save, masking, one-token key test,

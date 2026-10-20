@@ -51,12 +51,21 @@ def recommend(task: str) -> str:
     chosen = next((k for k in order if k in by_key and by_key[k]["id"] in ids),
                   data.get("default_model", data["models"][0]["key"]))
     entry = by_key[chosen]
+    runner = entry.get("runner", "opencode")
+    if POOL == "opencode":
+        how = f"opencode: /model {entry['id']}"
+    else:
+        how = ("kilo: models outside Kilo are reachable only through this router — use `router/auto` "
+               "in the model picker or the `kilo-router_run` tool; opencode free models have no direct "
+               "API (opencode CLI only)")
     return json.dumps({
         "pool": POOL,
         "switch_to": entry["id"],
         "model_key": chosen,
-        "how": f"opencode: /model {entry['id']}" if POOL == "opencode"
-               else "kilo: pick the model in the picker (/models) or use router/auto",
+        "runner": runner,
+        "execution": "opencode CLI (the only way outside opencode)" if runner == "opencode"
+                     else "direct provider API with your key from providers.json",
+        "how": how,
         "deferred": decision["deferred"],
         "confidence": decision["confidence"],
         "ranking": [{"key": r["model"], "id": r["model_id"], "probability": r["probability"]}
