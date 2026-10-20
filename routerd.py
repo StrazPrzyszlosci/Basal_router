@@ -1,10 +1,10 @@
 #!/home/krzysiek/basal-env/bin/python
-"""Router jako jeden endpoint zgodny z OpenAI API (127.0.0.1:8081).
+"""Router as a single OpenAI-compatible endpoint (127.0.0.1:8788).
 
-POST /v1/chat/completions: basal wybiera model z rejestru, routerd wykonuje
-zadanie (opencode CLI albo bezpośrednio u providera z providers.json) i zwraca
-odpowiedź w formacie OpenAI. model="router/free-best" = pełny routing,
-model="router/<klucz z models.json>" = wymuszenie konkretnego modelu.
+POST /v1/chat/completions: basal picks a model from the registry, routerd executes the task
+(via opencode CLI, or straight to a provider from providers.json) and returns the answer in
+OpenAI format. model="router/auto" = full routing, model="router/<key from models.json>" forces
+a specific model. GET /panel serves the provider-key management UI.
 """
 import json
 import os
@@ -89,7 +89,7 @@ async def chat_completions(request):
                 fallback_errors.append(f"{key}: {exc}")
         if content is None:
             return JSONResponse(
-                {"error": {"message": "; ".join(fallback_errors) or "brak wyniku",
+                {"error": {"message": "; ".join(fallback_errors) or "no output",
                            "type": "router_error"}},
                 status_code=502,
             )
@@ -181,10 +181,10 @@ async def panel_add_provider(request):
     body = await request.json()
     name = str(body.get("name", "")).strip().lower()
     if not NAME_RE.match(name):
-        return JSONResponse({"error": "nazwa: małe litery, cyfry, myślnik (max 32)"}, status_code=400)
+        return JSONResponse({"error": "name: lowercase letters, digits, hyphen (max 32)"}, status_code=400)
     providers = router.load_providers()
     if name in providers:
-        return JSONResponse({"error": "dostawca już istnieje"}, status_code=409)
+        return JSONResponse({"error": "provider already exists"}, status_code=409)
     providers[name] = {"baseURL": str(body.get("baseURL", "")).strip(),
                       "apiKey": "", "probe_model": str(body.get("probe_model", "")).strip()}
     save_providers(providers)
@@ -196,11 +196,11 @@ async def panel_save_provider(request):
         return JSONResponse({"error": "forbidden"}, status_code=403)
     name = request.path_params["name"]
     if not NAME_RE.match(name):
-        return JSONResponse({"error": "zła nazwa"}, status_code=400)
+        return JSONResponse({"error": "bad name"}, status_code=400)
     body = await request.json()
     providers = router.load_providers()
     if name not in providers:
-        return JSONResponse({"error": "nieznany dostawca"}, status_code=404)
+        return JSONResponse({"error": "unknown provider"}, status_code=404)
     providers[name]["apiKey"] = str(body.get("apiKey", ""))
     if str(body.get("baseURL", "")).strip():
         providers[name]["baseURL"] = str(body["baseURL"]).strip()
@@ -216,12 +216,12 @@ async def panel_test_provider(request):
     name = request.path_params["name"]
     cfg = router.load_providers().get(name) or {}
     if not cfg.get("apiKey"):
-        return JSONResponse({"ok": False, "error": "brak zapisanego klucza"})
+        return JSONResponse({"ok": False, "error": "no saved key"})
     registry = router.load_registry()["models"]
     probe = cfg.get("probe_model") or next(
         (m.get("model", m["id"]) for m in registry if m.get("provider") == name), None)
     if not probe:
-        return JSONResponse({"ok": False, "error": "brak probe_model — ustaw go w providers.json"})
+        return JSONResponse({"ok": False, "error": "missing probe_model — set it in providers.json"})
     start = time.time()
     try:
         response = httpx.post(

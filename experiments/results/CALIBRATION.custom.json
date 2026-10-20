@@ -1,0 +1,96 @@
+{
+ "prompt": 2,
+ "temperature_per_prim": {
+  "choice": 0.7711054127039705,
+  "noul": 1.8340080864093422,
+  "score": 1.9430638823072113
+ },
+ "temperature_per_bucket": {
+  "choice": {
+   "2-10": 1.7062550705226853,
+   "11-26": 0.6639592783444488
+  }
+ },
+ "temperature_source": {
+  "choice": "blended: 72% fitted on 36 FIT decisions, 28% shipped",
+  "noul": "shipped (no decisions)",
+  "score": "shipped (no decisions)",
+  "choice 2-10": "shipped (0 FIT decisions < 50)",
+  "choice 11-26": "blended: 72% fitted on 36 FIT decisions, 28% shipped bucket",
+  "choice 27-255": "type temperature (0 FIT decisions < 50)"
+ },
+ "thresholds": {
+  "0.01": {
+   "confidence": null,
+   "method": "bound-controlled (one-sided 95% Clopper-Pearson on FIT)",
+   "reason": "a 0.01 bound needs at least 299 accepted FIT decisions without an error; FIT has 36",
+   "per_type": {
+    "choice": {
+     "confidence": null,
+     "reason": "a 0.01 bound needs at least 299 accepted FIT decisions without an error; FIT has 36"
+    }
+   },
+   "pooled": "informational: \"confidence\" here is one threshold pooled over all types; basal-serve applies only per_type[type].confidence and defers a type without one"
+  },
+  "0.05": {
+   "confidence": null,
+   "method": "bound-controlled (one-sided 95% Clopper-Pearson on FIT)",
+   "reason": "a 0.05 bound needs at least 59 accepted FIT decisions without an error; FIT has 36",
+   "per_type": {
+    "choice": {
+     "confidence": null,
+     "reason": "a 0.05 bound needs at least 59 accepted FIT decisions without an error; FIT has 36"
+    }
+   },
+   "pooled": "informational: \"confidence\" here is one threshold pooled over all types; basal-serve applies only per_type[type].confidence and defers a type without one"
+  }
+ },
+ "gates": {
+  "ece_lofo": {
+   "choice": {
+    "n": 0,
+    "n_families": 0,
+    "mean": null,
+    "pooled": null,
+    "reference": null,
+    "regression": null,
+    "reason": "one family: give \"family\" on the lines or questions"
+   }
+  },
+  "automated_at": {
+   "0.01": 0.0,
+   "0.05": 0.0
+  },
+  "automated_error": {
+   "0.01": null,
+   "0.05": null
+  },
+  "automated_at_pooled": {
+   "0.01": 0.0,
+   "0.05": 0.0
+  },
+  "min_family": 30,
+  "ece_reference": null
+ },
+ "engine": "ollama",
+ "fitted_on": {
+  "data": "calibration_input.jsonl",
+  "decisions": 45,
+  "requests": 45,
+  "fit": 36,
+  "cert": 9,
+  "per_type": {
+   "choice": 45
+  },
+  "multi": 0,
+  "date": "2026-10-20",
+  "model": "Remek/basal-2.0-mini-GGUF",
+  "engine": "ollama",
+  "split": "FIT 70% / CERT 30% by group",
+  "tool": "basal-calibrate 2.2.0",
+  "revision": "594d115f7d5e9f7c7858b39d023c78574c2fe77a",
+  "orders": 1
+ },
+ "certified_on": "CERT split of fitted_on.data (30% by group)",
+ "baseline": "Remek/basal-2.0-mini-GGUF/CALIBRATION.ollama.json"
+}

@@ -1,19 +1,18 @@
 #!/home/krzysiek/basal-env/bin/python
-"""Buduje karty modeli w models.json z danych z models.dev (rejestr, z którego korzysta opencode).
+"""Rebuilds the raw models.dev card variant (models.net.json).
 
-Kopia kart ręcznych trafia do models.manual.json (raz, przy pierwszym uruchomieniu).
-Modele bez danych w models.dev (np. lokalne z Ollamy) zostają z kartą ręczną.
+Pulls https://models.dev/api.json (the registry opencode itself uses) and builds cards from real data:
+context/output limits, cost, capabilities and the source description. Models without data keep their
+current card. The production registry (models.json) is never touched by this script.
 """
 import json
-import shutil
 import time
 from pathlib import Path
 
 import httpx
 
 DIR = Path(__file__).resolve().parent
-REGISTRY = DIR / "models.json"
-BACKUP = DIR / "models.manual.json"
+TARGET = DIR / "models.net.json"
 API = "https://models.dev/api.json"
 CACHE = Path("/tmp/kilo/modelsdev.json")
 
@@ -29,15 +28,15 @@ def human(n):
 def capabilities_of(model):
     caps = []
     if model.get("reasoning"):
-        caps.append("głębokie rozumowanie")
+        caps.append("deep reasoning")
     if model.get("tool_call"):
-        caps.append("narzędzia (function calling)")
+        caps.append("tools (function calling)")
     inputs = (model.get("modalities") or {}).get("input", [])
-    for token, label in (("image", "obrazy (vision)"), ("video", "wideo"), ("pdf", "PDF")):
+    for token, label in (("image", "images (vision)"), ("video", "video"), ("pdf", "PDF")):
         if token in inputs:
             caps.append(label)
     if model.get("structured_output"):
-        caps.append("strukturalne wyjścia (JSON)")
+        caps.append("structured outputs (JSON)")
     return caps
 
 
@@ -63,32 +62,28 @@ def find_entry(dev, entry_id):
 def build_card(model):
     limit = model.get("limit") or {}
     cost = model.get("cost") or {}
-    parts = [f"Kontekst: {human(limit.get('context'))}, wyjście: {human(limit.get('output'))}."]
+    parts = [f"Context: {human(limit.get('context'))}, output: {human(limit.get('output'))}."]
     if cost.get("input") == 0 and cost.get("output") == 0:
-        parts.append("Darmowy (0 zł).")
+        parts.append("Free.")
     caps = capabilities_of(model)
     if caps:
-        parts.append("Możliwości: " + "; ".join(caps) + ".")
+        parts.append("Capabilities: " + "; ".join(caps) + ".")
     if model.get("description"):
         parts.append(shorten(model["description"]))
     return " ".join(parts)
 
 
 def main():
-    registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
-    if not BACKUP.exists():
-        shutil.copy(REGISTRY, BACKUP)
-        print(f"kopia kart ręcznych: {BACKUP}")
+    data = json.loads(TARGET.read_text(encoding="utf-8"))
     if CACHE.exists():
         dev = json.loads(CACHE.read_bytes())
     else:
         dev = httpx.get(API, timeout=180).json()
     updated, missing = [], []
-    for entry in registry["models"]:
+    for entry in data["models"]:
         model = find_entry(dev, entry["id"])
         if model is None:
             missing.append(entry["id"])
-            entry["meta"] = {"card_source": "manual"}
             continue
         entry["name"] = model.get("name", entry["name"])
         entry["card"] = build_card(model)
@@ -104,11 +99,11 @@ def main():
             "description_full": model.get("description"),
         }
         updated.append(entry["id"])
-    REGISTRY.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"karty z models.dev: {len(updated)}")
+    TARGET.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"cards from models.dev: {len(updated)}")
     for model_id in updated:
         print("  +", model_id)
-    print(f"bez danych (karta ręczna): {missing}")
+    print(f"no data (card kept): {missing}")
 
 
 if __name__ == "__main__":

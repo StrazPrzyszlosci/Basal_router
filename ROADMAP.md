@@ -1,64 +1,125 @@
-# Router darmowych modeli na Basal 2.2
+# Basal Router — roadmap and research log
 
-Basal 2.2 (basal-2.0-mini 1.5B Q8_0 przez Ollamę) decyduje, który darmowy model ma obsłużyć zadanie.
-Rejestr „ulubionych" modeli edytujesz w `models.json` (maks. 20 opcji — tyle odczytuje tryb ollama).
+Basal 2.2 (basal-2.0-mini 1.5B Q8_0 via Ollama) decides which free model handles a task.
+The registry of "favourite" models lives in `models.json` (max 20 options — an ollama-mode limit).
 
-## Architektura
+## Architecture
 
 ```
-Kilo Code (agenci, /route) ──MCP stdio──> router_mcp.py
-                                             │  route / models / run
+Kilo Code (agents, /route) ──MCP stdio──> router_mcp.py
+                                             │  recommend / pool / route / models / run
                                              │  HTTP POST /v1/systemone
-                                     basal-serve :8000 (decyzje choice, kalibracja)
+                                     basal-serve :8000 (choice decisions, calibration)
                                              │  raw prompt + logprobs
                                      ollama serve :11434 (pdurlej/basal:2.0-1.5b, 1.7 GB)
                                              │
-                                     router.py loguje decyzje ──> decisions.jsonl
-                                     (po uzupełnieniu gold ──> basal-calibrate)
+                                     router.py logs decisions ──> decisions.jsonl
+                                     (after filling gold ──> basal-calibrate)
                                              │
-                                     opencode run -m <model> (wykonanie zadania)
+                                     opencode run -m <model> (execution)
 ```
 
-## Pliki
-
-| Plik | Rola |
-|---|---|
-| `models.json` | rejestr modeli: klucz, id opencode, karta (to ją „widzi" basal), runner |
-| `router.py` | route/models/annotate; loguje decyzje w formacie `basal-calibrate` |
-| `router_mcp.py` | serwer MCP `kilo-router` (stdio): `route`, `models`, `run` |
-| `kilo.json` | rejestracja MCP w Kilo (projekt) + uprawnienia narzędzi |
-| `.kilo/command/route.md` | komenda `/route <zadanie>` |
-| `decisions.jsonl` | log decyzji; pole `gold` uzupełniasz po fakcie |
-
-## Użycie
+## Usage
 
 ```bash
-~/basal-env/bin/python router.py route "napraw bug: pętla w bashu się nie kończy"
-~/basal-env/bin/python router.py models
-~/basal-env/bin/python router.py annotate        # uzupełnij gold w decisions.jsonl
+~/basal-env/bin/python router.py route "fix a bug: a bash loop never ends"
+~/basel-env/bin/python router.py models
+~/basel-env/bin/python router.py annotate        # fill gold in decisions.jsonl
+~/basel-env/bin/python experiments/run_experiments.py report   # regenerate RESULTS.md from eval files
 ```
 
-W Kilo (po restarcie sesji w tym katalogu): `/route <zadanie>` albo narzędzia `kilo-router_route` / `kilo-router_run`.
+In Kilo Code (after a session restart in this directory): `/route <task>` or the `kilo-router_*` tools.
+In opencode: the `basal-router` MCP server (pool of opencode free models, `recommend` returns the id for `/model`).
 
-## Endpoint OpenAI-compatible: routerd (127.0.0.1:8788, model "auto")
+## Measurements on i3-10110U (2C/4T, RAM under load)
 
-`routerd.py` to jeden punkt wejścia zgodny z OpenAI API — dla opencode, hermes, Kilo i wszystkiego, co mówi po OpenAI:
+- basal-serve start: 8 s; first request (cold): 18.5 s; same state (cached): ~9 s
+- `llama-server` (Ollama): ~1.1 GB RSS; model file 1.7 GB
+- one routing decision (1 choice question, 15 options): 30-70 s depending on swap pressure
+- the measurement stack is kept alive by Kilo Code's background-process runner
 
-- `POST /v1/chat/completions` z `model: "auto"` → basal wybiera model z rejestru, routerd wykonuje
-  (darmowe: `opencode run -m <id>`; własne klucze: bezpośrednio u providera z `providers.json`) i zwraca odpowiedź OpenAI
-- `model: "router/<klucz>"` wymusza konkretny model; pole `router` w odpowiedzi niesie decyzję basal
+## ollama-mode limits
+
+- max 20 options per question (Ollama's logprob limit); >20 models would need two-stage routing
+- 4,096-token context: very long task descriptions are cut in the middle
+- the shipped calibration is cautious: a 1% target defers everything; use the 5% target or your own fit
+
+## Research: card configurations
+
+| Config | Cards | Registry file | Result |
+|---|---|---|---|
+| C1 | hand-written v1 | `models.manual.json` | 60% top-1, errors at conf < 0.3 |
+| C2 | raw models.dev metadata | `models.net.json` | 0% top-1, all conf 0.14-0.26, 2x slower |
+| C3 | role + appended facts | `models.hybrid.json` | 53% top-1, blurred signal |
+| C4 | manual-v2, Polish | `models.manual-v2.json` | 60% top-1 |
+| C5 | manual-v2, English | `models.json` | measuring |
+
+Key findings: concise, role-differentiated cards win at 1.5B scale; uniform fact tails dilute the signal
+and double latency; raw provider metadata carries no routing signal at all. Facts belong in `meta`
+(for GEPA to weave in later), not in every card. Registry gap: no creative-writing model
+(the one persistent high-confidence miss, task t10).
+
+## Phase 1 — calibration on your own data (built into Basal 2.2)
+
+1. Collect decisions: `router.py route ...` (or MCP) — every call lands in `decisions.jsonl`.
+2. Fill `gold` (which model would actually have been best): `router.py annotate`.
+3. Fit thresholds and temperatures:
+   ```bash
+   ~/basal-env/bin/basal-calibrate experiments/calibration_input.jsonl \
+     --model Remek/basal-2.0-mini-GGUF --mode ollama \
+     --ollama-model pdurlej/basal:2.0-1.5b \
+     --out experiments/results/CALIBRATION.custom.json
+   ```
+4. Serve it: `basal-serve ... --calibration experiments/results/CALIBRATION.custom.json`
+   and raise `confidence_floor` in `models.json` to the certified threshold.
+
+The current calibration input is built from the labelled eval sets (C1+C3+C4 = 45 decisions, gold inside).
+
+## Phase 2 — GEPA (github.com/gepa-ai/gepa)
+
+GEPA evolves prompts using execution feedback. Here it optimises two things, iterating on the labelled
+`eval_*.jsonl` sets (metric: routing accuracy):
+- `INSTRUCTIONS` in `router.py` (the model-selection instruction),
+- the model cards in the registry (they are the prompt basal reads; improvements go back to the registry).
+
+## Phase 3 — OpenEvolve (github.com/codelion/openevolve)
+
+AlphaEvolve-style code evolution: let it evolve `router.py` + the registry as a "genome" with
+fitness = accuracy on the labelled sets (plus penalties for latency and deferrals). Worth it once a few
+hundred good labels exist.
+
+## Phase 4 — LangGraph (orchestration)
+
+Graph: `route -> run (opencode) -> verify` — verify the result with a `noul` question behind the generator
+(the "compress -> generate -> verify" pattern from Basal's docs/TASKS.md), retry with a stronger model when
+verify rejects; plus parallel paths (two models, then basal `score` picks the better answer).
+
+## OpenAI-compatible endpoint: routerd (127.0.0.1:8788, model "auto")
+
+`routerd.py` is the single entry point for opencode, hermes, Kilo and anything OpenAI-speaking:
+
+- `POST /v1/chat/completions` with `model: "auto"` → basal picks a model, routerd executes it
+  (free: `opencode run -m <id>`; own keys: straight to the provider from `providers.json`) and returns an
+  OpenAI-format answer
+- `model: "router/<key>"` forces a model; the `router` field carries basal's decision
   (chosen_by_basal, confidence, deferred, executed_model, fallback_errors)
-- **fallback**: gdy wykonanie padnie, routerd bierze kolejne modele z rankingu basal (do 2 prób zapasowych)
-- streaming jest emulowany (cała treść w jednym chunku)
-- długi kontekst: do basal idzie skrócony opis zadania (głowa+ogon); pełna treść leci do modelu docelowego
+- **fallback**: on execution failure routerd takes the next models from basal's ranking (up to 2 retries)
+- streaming is emulated (whole content in one chunk)
+- long context: basal sees a trimmed task description (head+tail); the full text goes to the target model
 
-Uruchamianie: `~/basal-env/bin/python routerd.py` (usługa lokalna, nasłuch tylko 127.0.0.1, klucze nie logowane).
-Port 8788, bo 8787 zajęty przez Hermes WebUI (`~/.hermes/hermes-webui/server.py`).
+Run: `~/basal-env/bin/python routerd.py` (local service, 127.0.0.1 only, keys never logged).
 
-**Klucze**: `providers.json` (chmod 600, nie commitować) — `{nazwa: {baseURL, apiKey}}`; puste apiKey wyłącza providera.
+**Keys**: `providers.json` (chmod 600, never commit) — `{name: {baseURL, apiKey}}`; empty apiKey disables
+a provider. The web panel manages them at http://127.0.0.1:8788/panel (save, masking, one-token key test,
+adding OpenAI-compatible providers). Port 8788, because 8787 is taken by your Hermes WebUI.
 
-**Kilo jako klient**: `kilo.json` projektu ma provider `router` → w pickerze `router/auto`.
-**opencode/hermes jako klient** — Custom/OpenAI-compatible endpoint `http://127.0.0.1:8788/v1`, model `auto`:
+**Kilo Code as a client**: the project `kilo.json` defines the `router` provider → pick `router/auto` in
+the model picker. **Kilo Code has no native model router** (grep over the 7.8.15 extension: zero hits for
+modelRouting/modelRouter/fallbackModel/autoModel; only the static `small_model` field in the SDK). The
+router you see in the picker is ours. The extension code is MIT (github.com/Kilo-Org/kilocode) but has
+no decision logic worth porting — the integration direction is the opposite: Kilo consumes our router.
+
+**opencode/hermes as a client** — custom/OpenAI-compatible endpoint `http://127.0.0.1:8788/v1`, model `auto`:
 
 ```jsonc
 {
@@ -73,82 +134,29 @@ Port 8788, bo 8787 zajęty przez Hermes WebUI (`~/.hermes/hermes-webui/server.py
 }
 ```
 
-**Benchmarky w kartach**: skrypt sync z metrykami (models.dev, OpenRouter API) dopisze je do kart
-`models.json` — bez ręcznego wymyślania liczb; potem GEPA douczy karty na Twoich danych.
+**Benchmarks in cards**: a sync script can pull metrics (models.dev, OpenRouter API) into card text —
+without hand-inventing numbers. Then GEPA refines the cards on your own data. The exact NVIDIA entries
+come from `kilo models nvidia` (client id vs NIM API model name differ, e.g. `nvidia/nvidia/llama-3.1-nemotron-70b-instruct`).
 
-## Stan vs pełna wizja (dokument „Basal Router")
+## Vision status (VISION.md)
 
-| Element wizji | Stan |
+| Vision item | Status |
 |---|---|
-| Jeden endpoint OpenAI-compat, model `auto` | **działa** (routerd, 8788) |
-| Basal klasyfikuje zadanie i wybiera model | **działa** (choice z kart + log decyzji) |
-| Darmowe modele przez opencode CLI | **działa** (runner opencode) |
-| Własne klucze (NIM itd.) w bezpiecznym magazynie | **szkielet** (providers.json chmod 600, 127.0.0.1) |
-| Fallback na błędy | **podstawowy** (kolejne z rankingu basal; bez mid-stream switching — streaming jest emulowany) |
-| Katalog modeli z benchmarkami | następny krok (sync models.dev / OpenRouter) |
-| Scheduler limitów RPM/TPM, 429 + Retry-After | do zrobienia |
-| Uczenie się wydajności (opóźnienia, błędy, jakość) | zbieranie od dziś (decisions.jsonl) → GEPA/kalibracja |
-| Panel WWW — klucze providerów | **działa** (`/panel` w routerd: zapis chmod 600, maskowanie, test klucza, dodawanie providerów) |
-| Panel WWW — historia, limity, statystyki | do zrobienia (FastAPI + SQLite) |
-| LiteLLM ≥1.83.9 | odroczone: NIM/OpenRouter/Groq/Cerebras są OpenAI-compat (wystarcza httpx); rozważyć przy providerach niekompatybilnych lub złożonych fallbackach |
-| Blokada płatnych wywołań | rejestr zawiera tylko darmowe/własne; egzekwowanie per-provider w fazie schedulerowej |
+| One OpenAI-compatible endpoint, model `auto` | **works** (routerd, 8788) |
+| Basal classifies the task and picks the model | **works** (choice over cards + decision log) |
+| Free models via opencode CLI | **works** (opencode runner) |
+| Own keys (NIM etc.) in a secure store | **skeleton done** (providers.json chmod 600, 127.0.0.1, key panel) |
+| Fallback on errors | **basic** (next from basal's ranking; no mid-stream switching — streaming is emulated) |
+| Model catalog with benchmarks | next step (models.dev / OpenRouter sync) |
+| RPM/TPM scheduler, 429 + Retry-After | to do |
+| Learning from performance (latency, errors, quality) | collecting since day one (decisions.jsonl) → GEPA/calibration |
+| Web stats panel (FastAPI + SQLite) | to do |
+| LiteLLM ≥1.83.9 | deferred: NIM/OpenRouter/Groq/Cerebras are OpenAI-compatible (httpx is enough); revisit for non-compatible providers or complex fallbacks |
+| Blocking paid calls | the registry holds only free/own models; per-provider enforcement in the scheduler phase |
 
-## Pomiary na i3-10110U (2C/4T, RAM mocno obciążony)
+## Notes
 
-- basal-serve start: 8 s; pierwszy request (zimny): 18,5 s; ten sam stan (cache): 8,3 s
-- `llama-server` (Ollama): ~1,1 GB RSS; plik modelu 1,7 GB
-- decyzja routera (1 pytanie choice, 12 opcji): patrz `latency_ms` w odpowiedzi
-
-## Ograniczenia (tryb ollama)
-
-- maks. 20 opcji na pytanie (limit logprobów Ollamy); >20 modeli = routing dwustopniowy
-- kontekst 4 096 tokenów: bardzo długi opis zadania jest przycinany w środku
-- wysłana kalibracja jest ostrożna: cel 1% odracza wszystko; używaj progu 5% lub własnej kalibracji
-
-## Faza 1 — kalibracja na własnych danych (wbudowane w 2.2)
-
-1. Zbieraj decyzje: `router.py route ...` (albo MCP) — każdy wpis ląduje w `decisions.jsonl`.
-2. Uzupełnij `gold` (który model faktycznie byłby najlepszy): `router.py annotate`.
-3. Dopasuj progi i temperatury:
-   ```bash
-   ~/basal-env/bin/basal-calibrate decisions.jsonl \
-     --model Remek/basal-2.0-mini-GGUF --mode ollama \
-     --ollama-model pdurlej/basal:2.0-1.5b
-   ```
-4. Podaj plik serwerowi: `basal-serve ... --calibration CALIBRATION.custom.json`
-   (i podnieś `confidence_floor` w `models.json` do certyfikowanego progu).
-
-Kilka etykiet zmienia temperatury, kilkaset certyfikuje próg 5% (dokumentacja Basal 2.2).
-
-## Faza 2 — GEPA (github.com/gepa-ai/gepa)
-
-GEPA ewoluuje prompty z użyciem feedbacku z wykonania. Tu optymalizuje dwie rzeczy,
-iterując na `decisions.jsonl` z goldem jako zbiorze ewaluacyjnym (metryka: trafność routingu):
-- `INSTRUCTIONS` w `router.py` (instrukcja wyboru modelu),
-- karty modeli w `models.json` (to jest prompt, który basal czyta — mutacje kart
-  poprawiające trafność zapisujesz z powrotem do rejestru).
-
-## Faza 3 — OpenEvolve (github.com/codelion/openevolve)
-
-Ewolucja kodu w stylu AlphaEvolve: pozwól mu ewoluować `router.py` + `models.json`
-jako „genom" z fitnessem = trafność na `decisions.jsonl` (plus kary za czas/odroczenia).
-Cięższe niż GEPA, sensowne gdy zbierze się kilkaset dobrych etykiet.
-
-## Faza 4 — LangGraph (orkiestracja)
-
-Graf: `route -> run (opencode) -> verify` — weryfikacja wyniku pytaniem `noul`
-za generatorem (wzorzec „compress -> generate -> verify" z docs/TASKS.md Basal),
-retry z mocniejszym modelem gdy verify odrzuci. Plus równoległe ścieżki
-(dwa modele, potem basal `score` wybiera lepszą odpowiedź).
-
-## Uwagi
-
-- „Abstral" nie udało się zidentyfikować (GitHub/PyPI) — doprecyzuj, co masz na myśli.
-- Ulubione modeli Kilo nie są zapisane w `kilo.json` (to stan UI) — są w `models.json`;
-  modele bramy Kilo dodaj z `runner: "kilo"` (route je wskaże, przełączenie ręczne).
-- `qwen-local` wymaga pobrania do Ollamy (`ollama pull`), obecnie w Ollamie jest tylko basal.
-- Kilo Code **nie ma natywnego routera modeli** (grep po rozszerzeniu 7.8.15: zero wystąpień
-  modelRouting/modelRouter/fallbackModel/autoModel; w SDK tylko pole `small_model`). Routing, który widać
-  w pickerze Kilo w tym katalogu, to nasz `router/auto`. Kod rozszerzenia jest open source (MIT,
-  github.com/Kilo-Org/kilocode), ale nie ma w nim logiki decyzyjnej wartej przenoszenie — kierunek integracji
-  jest odwrotny: to Kilo konsumuje naszego routera (provider baseURL + MCP).
+- "Abstral" could not be identified (GitHub/PyPI) — needs clarification.
+- Kilo Code favourites are UI state, not config — they live in `models.json`; add Kilo-gateway models
+  with `runner: "kilo"` (route will name them, switching stays manual).
+- `qwen-local` must be pulled into Ollama first; currently only basal is there.
