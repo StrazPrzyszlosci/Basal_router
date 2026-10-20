@@ -1,9 +1,11 @@
 #!/home/krzysiek/basal-env/bin/python
 """Badania konfiguracji routera: dokładność top-1, pewność, opóźnienia, progi automatyzacji.
 
-C1-manual-cards: karty ręczne (models.manual.json, kopia sprzed synchronizacji z models.dev).
-C2-net-cards: karty zbudowane z danych models.dev (models.json).
-Każde zadanie z benchmark_tasks.jsonl = jedno pytanie choice do basal; progi liczone post hoc.
+Konfiguracje (wybór: pierwszy argument, np. `run_experiments.py C1-manual-cards,C3-hybrid-cards`):
+  C1-manual-cards — karty ręczne (models.manual.json), baseline
+  C2-net-cards    — karty wyłącznie z models.dev (models.net.json)
+  C3-hybrid-cards — karty hybrydowe: rola wg realnych profili + fakty z models.dev (models.json)
+Goldy benchmarku (v2) oparte na realnych profilach z models.dev.
 """
 import json
 import socket
@@ -26,8 +28,9 @@ OUT.mkdir(exist_ok=True)
 TASKS = [json.loads(line) for line in (DIR / "benchmark_tasks.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
 FLOORS = (0.3, 0.45, 0.55, 0.7)
 CONFIGS = {
-    "C1-manual-cards": {"registry": "models.manual.json", "label": "karty ręczne"},
-    "C2-net-cards": {"registry": "models.json", "label": "karty z models.dev"},
+    "C1-manual-cards": {"registry": "models.manual.json", "label": "karty ręczne (v1)"},
+    "C2-net-cards": {"registry": "models.net.json", "label": "karty z models.dev"},
+    "C3-hybrid-cards": {"registry": "models.json", "label": "karty hybrydowe (rola + fakty)"},
 }
 
 
@@ -59,6 +62,7 @@ def run_config(name, registry_file):
             row = {"id": task["id"], "profile": task["profile"], "gold": task["gold"],
                    "error": str(exc), "wall_s": round(time.time() - t0, 1)}
         rows.append(row)
+        (OUT / f"progress_{name}.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
         if "error" in row:
             print(f"[{name}] {row['id']}: ERROR {row['error']}", flush=True)
         else:
@@ -102,12 +106,12 @@ def summarize(rows):
 
 
 def render_md(results, rows_by_config):
+    names = list(results)
     lines = ["# Wyniki badań konfiguracji routera", "",
              f"Data: {datetime.now().strftime('%Y-%m-%d %H:%M')} · {socket.gethostname()} "
              "(Intel i3-10110U, 4 wątki, RAM pod obciążeniem) · basal-2.0-mini 1.5B Q8_0 przez Ollamę · "
-             f"{len(TASKS)} zadań syntetycznych, 15 opcji w rejestrze", ""]
-    lines += ["Porównanie źródeł kart modeli: " + ", ".join(
-        f"**{name}** ({cfg['label']})" for name, cfg in CONFIGS.items()) + ".", ""]
+             f"benchmark v2: {len(TASKS)} zadań, 15 opcji, goldy wg realnych profili models.dev", ""]
+    lines += ["Przebiegi: " + ", ".join(f"**{n}** ({CONFIGS[n]['label']})" for n in names) + ".", ""]
     lines += ["## Zbiorczo", "",
               "| konfiguracja | top-1 | śr. pewność trafnych | śr. pewność błędnych | mediana [ms] | p90 [ms] |",
               "|---|---|---|---|---|---|"]
@@ -121,34 +125,45 @@ def render_md(results, rows_by_config):
             lines.append(f"| {name} | {floor} | {d['automation_rate'] * 100:.0f}% | "
                          f"{d['errors_among_automated']} (rate {d['error_rate_among_automated']}) |")
     lines += ["", "## Per zadanie", ""]
-    header = "| id | profil | gold | " + " | ".join(f"{n} wybrane (pewność)" for n in CONFIGS) + " |"
-    lines += [header, "|---|---|---|" + "|---|" * len(CONFIGS)]
-    by_config = {n: {r["id"]: r for r in rows_by_config.get(n, [])} for n in CONFIGS}
+    header = "| id | profil | gold | " + " | ".join(f"{n}" for n in names) + " |"
+    lines += [header, "|---|---|---|" + "|---|" * len(names)]
+    by_config = {n: {r["id"]: r for r in rows_by_config.get(n, [])} for n in names}
 
     def fmt(row):
         if not row or "error" in row:
             return "ERR"
-        return f"{row.get('chosen')} ({row.get('confidence', 0):.2f})"
+        mark = "✓" if row.get("chosen") == row.get("gold") else "✗"
+        return f"{mark} {row.get('chosen')} ({row.get('confidence', 0):.2f})"
 
     for task in TASKS:
-        cells = " | ".join(fmt(by_config[n].get(task["id"])) for n in CONFIGS)
+        cells = " | ".join(fmt(by_config[n].get(task["id"])) for n in names)
         lines.append(f"| {task['id']} | {task['profile']} | {task['gold']} | {cells} |")
-    lines += ["", "Gold autorowany pod karty ręczne; rozbieżności C2 pokazują, jak zmiana źródła kart "
-              "zmienia routing — do przeglądu, które goldy warto zrewidować.", "",
-              "Surowe pomiary: `experiments/results/last_run.json`; `eval_*.jsonl` to gotowy input dla "
-              "`basal-calibrate` (gold w środku) i pod zbiór ewaluacyjny GEPA.", ""]
+    lines += ["", "Goldy v2 wg realnych profili models.dev (rewizja: t07 beam→nemotron-ultra, "
+              "t10 big-pickle→glm-flash). Historyczny wynik C2-net-cards na benchmarku v1: 0/10 "
+              "(poprzedni run, w historii gita).", ""]
+    if len(names) == 1:
+        lines.append("Uwaga: przebieg jednej konfiguracji — porównanie z pozostałymi w poprzednich RESULTS "
+                     "(historia gita) lub dociągnij `run_experiments.py <lista-konfiguracji>`.", "")
+    lines += ["Surowe pomiary: `experiments/results/last_run.json`; `eval_*.jsonl` to gotowy input dla "
+              "`basal-calibrate` i pod zbiór ewaluacyjny GEPA.", ""]
     return "\n".join(lines)
 
 
 def main():
-    rows_by_config = {}
-    results = {}
-    for name, cfg in CONFIGS.items():
-        rows_by_config[name] = run_config(name, cfg["registry"])
+    if len(sys.argv) > 1 and sys.argv[1] != "all":
+        selected = sys.argv[1].split(",")
+    else:
+        selected = list(CONFIGS)
+    for name in selected:
+        if name not in CONFIGS:
+            raise SystemExit(f"nieznana konfiguracja: {name}; dostępne: {', '.join(CONFIGS)}")
+    rows_by_config, results = {}, {}
+    for name in selected:
+        rows_by_config[name] = run_config(name, CONFIGS[name]["registry"])
         results[name] = summarize(rows_by_config[name])
     payload = {"meta": {"ts": datetime.now().isoformat(), "host": socket.gethostname(),
                         "model": "basal-2.0-mini 1.5B Q8_0 (ollama)", "tasks": len(TASKS),
-                        "configs": {n: c["registry"] for n, c in CONFIGS.items()}},
+                        "configs": {n: CONFIGS[n]["registry"] for n in selected}},
                "results": results, "rows": rows_by_config}
     (OUT / "last_run.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
     (ROOT / "RESULTS.md").write_text(render_md(results, rows_by_config), encoding="utf-8")

@@ -165,7 +165,7 @@
       "key": "minimax-flash",
       "id": "opencode/minimax-m3.1-flash-free",
       "name": "MiniMax M3.1 Flash Free",
-      "card": "Lekkie zadania tekstowe, szybkie odpowiedzi, formatowanie, krótkie analizy. Kontekst: 1000000, wyjście: 512000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo.",
+      "card": "Frontowy model multimodalny do kodu z regulowaną głębokością rozumowania: do zadań wymagających wyższej jakości. Kontekst: 1000000, wyjście: 512000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -192,7 +192,7 @@
       "key": "mimo-flash",
       "id": "opencode/mimo-v2.6-flash-free",
       "name": "MiMo-V2.6-Flash Free",
-      "card": "Najprostsze i najkrótsze zadania: jednozdaniowe odpowiedzi, szybkie pytania, maksymalna szybkość. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo.",
+      "card": "Najszybsza klasa flash: krótkie odpowiedzi, proste automatyzacje i lekkie zadania tekstowe. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -219,7 +219,7 @@
       "key": "beam",
       "id": "opencode/beam-free",
       "name": "Beam Free",
-      "card": "Research i deep research: wyszukiwanie, synteza wiedzy, raporty z wielu źródeł. Kontekst: 1048576, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
+      "card": "Sparse MoE (23B aktywnych parametrów) do rozumowania i przepływów agentowych: złożone analizy i praca z narzędziami. Kontekst: 1048576, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
       "runner": "opencode",
       "tags": [
         "free",
@@ -245,7 +245,7 @@
       "key": "big-pickle",
       "id": "opencode/big-pickle",
       "name": "Big Pickle",
-      "card": "Model społecznościowy do kreatywnego pisania, rozmowy i eksperymentów. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
+      "card": "Model deliberacyjny: wielokrokowa analiza, rozwiązywanie problemów i praca z narzędziami. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
       "runner": "opencode",
       "tags": [
         "free",

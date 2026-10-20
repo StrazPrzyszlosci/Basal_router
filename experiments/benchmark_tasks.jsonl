@@ -4,7 +4,12 @@
 {"id": "t04", "profile": "vision", "task": "Odczytaj ze zdjęcia paragonu kwoty pozycji i sprawdź, czy suma zgadza się z totalem.", "gold": "nemotron-vl"}
 {"id": "t05", "profile": "simple", "task": "Przetłumacz jedno zdanie na angielski: dziękuję za szybką wysyłkę i miłą obsługę.", "gold": "mimo-flash"}
 {"id": "t06", "profile": "simple", "task": "Napisz krótkie, uprzejme podziękowanie klientowi za cierpliwość podczas przedłużonego wsparcia technicznego.", "gold": "minimax-flash"}
-{"id": "t07", "profile": "research", "task": "Zbierz i streć aktualne metody kwantyzacji dużych modeli językowych, podając źródła i porównanie kosztów pamięciowych.", "gold": "beam"}
+{"id": "t07", "profile": "research", "task": "Zbierz i streć aktualne metody kwantyzacji dużych modeli językowych, podając źródła i porównanie kosztów pamięciowych.", "gold": "nemotron-ultra"}
 {"id": "t08", "profile": "reasoning", "task": "Zaprojektuj architekturę systemu przyjmującego 10 tysięcy zapytań na sekundę; porównaj dwie propozycje i uzasadnij wybór.", "gold": "nemotron-ultra"}
 {"id": "t09", "profile": "long-context", "task": "Przeanalizuj 300-stronicowy raport audytowy i wypisz w punktach ryzyka prawne dla spółki.", "gold": "longcat"}
-{"id": "t10", "profile": "creative", "task": "Napisz krótki, zabawny wiersz o routerze, który wybiera modele AI dla każdego zapytania.", "gold": "big-pickle"}
+{"id": "t10", "profile": "creative", "task": "Napisz krótki, zabawny wiersz o routerze, który wybiera modele AI dla każdego zapytania.", "gold": "glm-flash"}
+{"id": "t11", "profile": "code", "task": "Przeprowadź duży refaktor modułu płatności w TypeScript: rozdziel kolejkę od handlerów, zachowaj publiczne API i pokryj zmiany testami.", "gold": "deepseek-flash"}
+{"id": "t12", "profile": "agent", "task": "Rozegraj deploy krok po kroku jako agent: sprawdź logi serwera, popraw konfigurację, uruchom testy i potwierdź dostępność aplikacji.", "gold": "glm-flash"}
+{"id": "t13", "profile": "math", "task": "Rozwiąż układ trzech równań liniowych z parametrem i omów, dla jakich wartości parametru istnieje dokładnie jedno rozwiązanie.", "gold": "nemotron-ultra"}
+{"id": "t14", "profile": "simple", "task": "Streść notatkę ze spotkania zespołu w trzech zdaniach, zachowując decyzje i terminy.", "gold": "mimo-flash"}
+{"id": "t15", "profile": "vision", "task": "Wyciągnij ze zdjęcia strony umowy numer umowy, datę zawarcia i kwotę, i zapisz je jako JSON.", "gold": "nemotron-vl"}
