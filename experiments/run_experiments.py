@@ -30,7 +30,8 @@ FLOORS = (0.3, 0.45, 0.55, 0.7)
 CONFIGS = {
     "C1-manual-cards": {"registry": "models.manual.json", "label": "karty ręczne (v1)"},
     "C2-net-cards": {"registry": "models.net.json", "label": "karty z models.dev"},
-    "C3-hybrid-cards": {"registry": "models.json", "label": "karty hybrydowe (rola + fakty)"},
+    "C3-hybrid-cards": {"registry": "models.hybrid.json", "label": "karty hybrydowe (rola + fakty)"},
+    "C4-manual-v2-cards": {"registry": "models.json", "label": "karty manual-v2 (produkcja)"},
 }
 
 
@@ -42,7 +43,17 @@ def criteria_from(registry_file):
 def run_config(name, registry_file):
     criteria = criteria_from(registry_file)
     rows = []
+    progress_path = OUT / f"progress_{name}.json"
+    if progress_path.exists():
+        try:
+            rows = json.loads(progress_path.read_text(encoding="utf-8"))
+        except Exception:
+            rows = []
+    done = {r["id"] for r in rows if "error" not in r}
     for task in TASKS:
+        if task["id"] in done:
+            print(f"[{name}] {task['id']}: pominięte (resume z progress file)", flush=True)
+            continue
         request = {"state": task["task"], "lang": "pl",
                    "questions": {"model": {"type": "choice", "instructions": router.INSTRUCTIONS,
                                            "criteria": criteria}}}

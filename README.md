@@ -1,6 +1,16 @@
 # Basal Router
 
-Lokalny router modeli AI na silniku decyzyjnym [Basal 2.2](https://github.com/rkinas/basal) (basal-2.0-mini 1.5B Q8_0 przez Ollamę). Jeden endpoint zgodny z OpenAI API: przychodzi zadanie, basal wybiera najlepszy darmowy model z rejestru, router wykonuje zadanie (opencode CLI albo provider z własnym kluczem) i zwraca odpowiedź.
+> **One model to rule them all.**
+>
+> Wybierasz **jeden model** — `Basal Router` (`auto`) — we wszystkich aplikacjach (Kilo, opencode, hermes,
+> cokolwiek mówiącego po OpenAI). Za nim lokalny klasyfikator [Basal 2.2](https://github.com/rkinas/basal)
+> (basal-2.0-mini 1.5B Q8_0 przez Ollamę) dobiera do każdego zadania najlepszy **darmowy** model z rejestru,
+> router wykonuje je (opencode CLI albo provider z własnym kluczem) i zwraca odpowiedź przez jeden endpoint
+> zgodny z OpenAI API. Zero ręcznego przełączania modeli i providerów: jeden adres, jeden model — wszystkie
+> darmowe modele za nim.
+
+Lokalny router modeli AI: decyzje bazują na kalibrowanym prawdopodobieństwie (`confidence`, progi, odraczanie),
+każda decyzja jest logowana pod własną kalibrację (`basal-calibrate`) i optymalizację kart (GEPA).
 
 ```
 aplikacje (Kilo / opencode / hermes / cokolwiek OpenAI-compat)
