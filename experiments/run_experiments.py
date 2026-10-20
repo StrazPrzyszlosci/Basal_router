@@ -30,7 +30,8 @@ FLOORS = (0.3, 0.45, 0.55, 0.7)
 CONFIGS = {
     "C1-manual-cards": {"registry": "models.manual.json", "label": "karty ręczne (v1)"},
     "C2-net-cards": {"registry": "models.net.json", "label": "karty z models.dev"},
-    "C3-hybrid-cards": {"registry": "models.json", "label": "karty hybrydowe (rola + fakty)"},
+    "C3-hybrid-cards": {"registry": "models.hybrid.json", "label": "karty hybrydowe (rola + fakty)"},
+    "C4-manual-v2-cards": {"registry": "models.json", "label": "karty manual-v2 (produkcja)"},
 }
 
 
