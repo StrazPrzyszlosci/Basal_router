@@ -43,7 +43,17 @@ def criteria_from(registry_file):
 def run_config(name, registry_file):
     criteria = criteria_from(registry_file)
     rows = []
+    progress_path = OUT / f"progress_{name}.json"
+    if progress_path.exists():
+        try:
+            rows = json.loads(progress_path.read_text(encoding="utf-8"))
+        except Exception:
+            rows = []
+    done = {r["id"] for r in rows if "error" not in r}
     for task in TASKS:
+        if task["id"] in done:
+            print(f"[{name}] {task['id']}: pominięte (resume z progress file)", flush=True)
+            continue
         request = {"state": task["task"], "lang": "pl",
                    "questions": {"model": {"type": "choice", "instructions": router.INSTRUCTIONS,
                                            "criteria": criteria}}}
