@@ -62,6 +62,11 @@ Client: `baseURL http://127.0.0.1:8788/v1`, model `auto` (force one: `router/<ke
 The `router` field of the response carries basal's decision: `chosen_by_basal`, `confidence`, `deferred`,
 `executed_model`, `fallback_errors`.
 
+Note: **opencode free models have no direct API** — outside opencode they are reachable only through the
+`opencode` CLI. routerd is exactly that bridge: Kilo Code, hermes and any other client use them through
+`router/auto` without ever touching opencode; inside opencode itself the `recommend` tool returns a native
+`/model` id.
+
 ## Security
 
 - `providers.json` (keys) is chmod 600, outside the repo, never logged

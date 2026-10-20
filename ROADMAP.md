@@ -23,9 +23,9 @@ Kilo Code (agents, /route) ──MCP stdio──> router_mcp.py
 
 ```bash
 ~/basal-env/bin/python router.py route "fix a bug: a bash loop never ends"
-~/basel-env/bin/python router.py models
-~/basel-env/bin/python router.py annotate        # fill gold in decisions.jsonl
-~/basel-env/bin/python experiments/run_experiments.py report   # regenerate RESULTS.md from eval files
+~/basal-env/bin/python router.py models
+~/basal-env/bin/python router.py annotate        # fill gold in decisions.jsonl
+~/basal-env/bin/python experiments/run_experiments.py report   # regenerate RESULTS.md from eval files
 ```
 
 In Kilo Code (after a session restart in this directory): `/route <task>` or the `kilo-router_*` tools.
@@ -75,6 +75,11 @@ and double latency; raw provider metadata carries no routing signal at all. Fact
 
 The current calibration input is built from the labelled eval sets (C1+C3+C4 = 45 decisions, gold inside).
 
+**Status (2026-10-20): wired.** `basal-calibrate` fitted temperatures per type and option-count bucket on
+our 45 labels (`experiments/results/CALIBRATION.custom.json`, served via `--calibration`); the 1%/5%
+threshold **certificates** need >=299/59 accepted FIT decisions without an error (we have 36), so until
+more labels arrive `confidence_floor` in `models.json` stays hand-set at 0.55.
+
 ## Phase 2 — GEPA (github.com/gepa-ai/gepa)
 
 GEPA evolves prompts using execution feedback. Here it optimises two things, iterating on the labelled
@@ -108,6 +113,11 @@ verify rejects; plus parallel paths (two models, then basal `score` picks the be
 - long context: basal sees a trimmed task description (head+tail); the full text goes to the target model
 
 Run: `~/basal-env/bin/python routerd.py` (local service, 127.0.0.1 only, keys never logged).
+
+**opencode-only models:** the `opencode/*` free models have no direct API — in any harness other than
+opencode they can be used only through the `opencode` CLI. routerd (and the `kilo-router_run` tool) are
+that bridge: other harnesses reach them via `router/auto`; inside opencode, `recommend` returns a native
+`/model` id and the registry ids match `opencode models`.
 
 **Keys**: `providers.json` (chmod 600, never commit) — `{name: {baseURL, apiKey}}`; empty apiKey disables
 a provider. The web panel manages them at http://127.0.0.1:8788/panel (save, masking, one-token key test,
