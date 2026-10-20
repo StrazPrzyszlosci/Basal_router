@@ -1,0 +1,20 @@
+[
+  {
+    "instructions": "Choose the model that best handles the task described in the state. Consider the task type (code, text, image, research, long document), the required depth of reasoning, speed and cost. For simple tasks choose the fastest sufficient model.",
+    "card:glm-flash": "Fast free general-purpose model: routine tasks, code fixes, summaries, good Polish text. Sensible default.",
+    "card:deepseek-flash": "Programming and code engineering: writing, analysis, debugging, refactoring, tests. Fast and cheap.",
+    "card:nemotron-ultra": "Strongest free model: hard reasoning, system design, planning, analysis. Slowest - only for genuinely hard tasks.",
+    "card:nemotron-lightning": "Fast everyday tasks that need more quality than the smallest models: high throughput, short contexts.",
+    "card:nemotron-vl": "Images and visual documents: screenshots, scans, charts, OCR, describing photos (vision).",
+    "card:longcat": "Very long context: analysing long documents, logs, many files at once.",
+    "card:minimax-flash": "Frontier multimodal coding model with tunable thinking depth: for tasks that need higher quality.",
+    "card:mimo-flash": "Fastest flash class: short answers, simple automations, light text tasks.",
+    "card:beam": "Sparse MoE (23B active params) for reasoning and agentic workflows: complex analysis and tool use.",
+    "card:big-pickle": "Deliberation model: multi-step analysis, problem solving and tool use.",
+    "card:or-free": "Automatic choice of a currently available free model via OpenRouter; when no clear favourite exists.",
+    "card:nim-nemotron-70b": "70B model via your own NVIDIA NIM key: serious reasoning, analysis and code, beyond opencode free limits; no queues.",
+    "card:nim-glm-flash": "Same profile as the free GLM Flash, via your own NIM key: stable, for tasks that cannot wait for the free endpoint.",
+    "card:nim-deepseek-flash": "Fast coding via your own NIM key: when the free opencode endpoint runs out.",
+    "card:qwen-local": "Runs offline on the laptop, fully private. Short 8k context, slow on this machine. Note: must be pulled into Ollama first."
+  }
+]

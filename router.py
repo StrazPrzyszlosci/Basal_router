@@ -15,7 +15,11 @@ REGISTRY_PATH = DIR / "models.json"
 LOG_PATH = DIR / "decisions.jsonl"
 BASAL_URL = os.environ.get("BASAL_URL", "http://127.0.0.1:8000")
 PROVIDERS_PATH = DIR / "providers.json"
+SETTINGS_PATH = DIR / "settings.json"
 OPENCODE = "/home/krzysiek/.opencode/bin/opencode"
+NO_MODELS_HINT = ("No model could be executed. opencode free models require an active opencode session "
+                  "(check `opencode auth list`); provider-key models (nim-*) need a key saved at "
+                  "http://127.0.0.1:8788/panel (providers.json).")
 INSTRUCTIONS = (
     "Choose the model that best handles the task described in the state. Consider the task type "
     "(code, text, image, research, long document), the required depth of reasoning, speed and cost. "
@@ -30,6 +34,28 @@ def load_registry():
     return data
 
 
+def load_settings():
+    if SETTINGS_PATH.exists():
+        try:
+            return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {}
+
+
+def usable_models(data=None):
+    """Registry entries executable right now: opencode models always, direct models only with a saved key."""
+    data = data or load_registry()
+    providers = load_providers()
+    usable = []
+    for m in data["models"]:
+        if m.get("runner", "opencode") == "direct":
+            if not (providers.get(m.get("provider")) or {}).get("apiKey"):
+                continue
+        usable.append(m)
+    return usable
+
+
 def build_request(task, models, gold=None):
     criteria = {m["key"]: f"{m['name']}. {m['card']}" for m in models}
     question = {"type": "choice", "instructions": INSTRUCTIONS, "criteria": criteria}
@@ -40,7 +66,10 @@ def build_request(task, models, gold=None):
 
 def route(task):
     data = load_registry()
-    models = data["models"]
+    settings = load_settings()
+    models = usable_models(data)
+    if not models:
+        raise RuntimeError(NO_MODELS_HINT)
     by_key = {m["key"]: m for m in models}
     response = httpx.post(f"{BASAL_URL}/v1/systemone", json=build_request(task, models), timeout=180)
     response.raise_for_status()
@@ -49,7 +78,7 @@ def route(task):
     ranking = sorted(answer["probabilities"].items(), key=lambda item: -item[1])
     confidence = answer["confidence"]
     chosen = answer["choice"]
-    floor = data.get("confidence_floor", 0.55)
+    floor = settings.get("confidence_floor", data.get("confidence_floor", 0.55))
     deferred = confidence < floor
     final = data.get("default_model", models[0]["key"]) if deferred else chosen
     entry = build_request(task, models, gold=None)
@@ -62,8 +91,9 @@ def route(task):
         "deferred": deferred,
         "final": final,
     })
-    with LOG_PATH.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    if settings.get("log_decisions", True):
+        with LOG_PATH.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
     return {
         "model": final,
         "model_id": by_key[final]["id"],
@@ -143,8 +173,10 @@ def main():
             raise SystemExit('usage: router.py route "task description"')
         print(json.dumps(route(task), ensure_ascii=False, indent=2))
     elif command == "models":
+        usable = {m["key"] for m in usable_models()}
         for model in load_registry()["models"]:
-            print(f"{model['key']:20} {model['id']}")
+            mark = "" if model["key"] in usable else "   [needs a key — inactive]"
+            print(f"{model['key']:20} {model['id']}{mark}")
     elif command == "annotate":
         annotate()
     else:

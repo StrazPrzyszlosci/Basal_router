@@ -53,14 +53,71 @@ def resolve_requested(model_name):
 
 
 async def list_models(request):
-    data = [{"id": VIRTUAL_MODEL, "object": "model", "owned_by": "kilo-router"}]
+    usable = {m["key"] for m in router.usable_models()}
+    data = [{"id": VIRTUAL_MODEL, "object": "model", "owned_by": "kilo-router", "available": True}]
     for entry in router.load_registry()["models"]:
-        data.append({"id": f"router/{entry['key']}", "object": "model", "owned_by": "kilo-router"})
+        data.append({"id": f"router/{entry['key']}", "object": "model", "owned_by": "kilo-router",
+                     "available": entry["key"] in usable})
     return JSONResponse({"object": "list", "data": data})
 
 
 async def health(request):
     return JSONResponse({"status": "ok"})
+
+
+def build_footer(decision):
+    by_key = {m["key"]: m for m in router.load_registry()["models"]}
+    entry = by_key.get(decision.get("model")) or {}
+    model_id = entry.get("id", decision.get("model"))
+    if decision.get("forced"):
+        why = "forced by the request (model=router/<key>)"
+    else:
+        card = (entry.get("card") or "").split(". ")[0]
+        why = f'basal matched the task to its registry card ("{card}")'
+        if decision.get("deferred"):
+            why = "confidence below the floor, the default model was used; " + why
+    alternatives = ", ".join(
+        f"{r['model']} {r['probability']:.2f}"
+        for r in decision.get("ranking", [])[:3] if r["model"] != decision.get("model"))
+    footer = (f"---\n[router] answered by {model_id} "
+              f"(confidence {decision.get('confidence', 0):.2f}). Why: {why}.")
+    if alternatives:
+        footer += f" Alternatives considered: {alternatives}."
+    return footer
+
+
+def save_settings_file(settings):
+    router.SETTINGS_PATH.write_text(json.dumps(settings, ensure_ascii=False, indent=2) + "\n",
+                                     encoding="utf-8")
+    os.chmod(router.SETTINGS_PATH, 0o600)
+
+
+async def panel_get_settings(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    settings = router.load_settings()
+    payload = {"answer_footer": settings.get("answer_footer", True),
+               "log_decisions": settings.get("log_decisions", True),
+               "confidence_floor": settings.get("confidence_floor")}
+    return JSONResponse({"settings": payload})
+
+
+async def panel_save_settings(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    body = await request.json()
+    current = router.load_settings()
+    if "answer_footer" in body:
+        current["answer_footer"] = bool(body["answer_footer"])
+    if "log_decisions" in body:
+        current["log_decisions"] = bool(body["log_decisions"])
+    if "confidence_floor" in body:
+        try:
+            current["confidence_floor"] = float(body["confidence_floor"])
+        except (TypeError, ValueError):
+            return JSONResponse({"error": "confidence_floor must be a number"}, status_code=400)
+    save_settings_file(current)
+    return await panel_get_settings(request)
 
 
 async def chat_completions(request):
@@ -90,7 +147,7 @@ async def chat_completions(request):
         if content is None:
             return JSONResponse(
                 {"error": {"message": "; ".join(fallback_errors) or "no output",
-                           "type": "router_error"}},
+                           "type": "router_error", "hint": router.NO_MODELS_HINT}},
                 status_code=502,
             )
     except Exception as exc:
@@ -102,6 +159,9 @@ async def chat_completions(request):
     extra["executed_model"] = decision["model"]
     if fallback_errors:
         extra["fallback_errors"] = fallback_errors
+    if router.load_settings().get("answer_footer", True):
+        content = f"{content}\n\n{build_footer(decision)}"
+        extra["footer_appended"] = True
     payload = {
         "id": "chatcmpl-" + uuid.uuid4().hex[:12],
         "object": "chat.completion",
@@ -245,6 +305,8 @@ app = Starlette(routes=[
     Route("/health", health),
     Route("/panel", panel_page),
     Route("/panel/api/state", panel_state),
+    Route("/panel/api/settings", panel_get_settings),
+    Route("/panel/api/settings", panel_save_settings, methods=["POST"]),
     Route("/panel/api/providers", panel_add_provider, methods=["POST"]),
     Route("/panel/api/providers/{name}", panel_save_provider, methods=["POST"]),
     Route("/panel/api/providers/{name}/test", panel_test_provider, methods=["POST"]),

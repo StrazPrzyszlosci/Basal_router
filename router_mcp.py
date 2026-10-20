@@ -96,7 +96,8 @@ def run(task: str, model: str = "", timeout_s: int = 600) -> str:
     try:
         return router.execute(key, task, timeout_s)
     except Exception as exc:
-        return json.dumps({"error": str(exc), "model": key}, ensure_ascii=False)
+        return json.dumps({"error": str(exc), "model": key, "hint": router.NO_MODELS_HINT},
+                          ensure_ascii=False)
 
 
 if __name__ == "__main__":

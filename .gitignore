@@ -2,6 +2,7 @@
 # secrets — never commit
 providers.json
 providers.*.json
+settings.json
 .env
 .env.*
 *.env
