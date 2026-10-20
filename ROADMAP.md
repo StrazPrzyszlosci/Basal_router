@@ -75,6 +75,11 @@ and double latency; raw provider metadata carries no routing signal at all. Fact
 
 The current calibration input is built from the labelled eval sets (C1+C3+C4 = 45 decisions, gold inside).
 
+**Status (2026-10-20): wired.** `basal-calibrate` fitted temperatures per type and option-count bucket on
+our 45 labels (`experiments/results/CALIBRATION.custom.json`, served via `--calibration`); the 1%/5%
+threshold **certificates** need >=299/59 accepted FIT decisions without an error (we have 36), so until
+more labels arrive `confidence_floor` in `models.json` stays hand-set at 0.55.
+
 ## Phase 2 — GEPA (github.com/gepa-ai/gepa)
 
 GEPA evolves prompts using execution feedback. Here it optimises two things, iterating on the labelled

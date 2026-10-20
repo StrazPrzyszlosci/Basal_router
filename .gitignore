@@ -1,5 +1,25 @@
+
+# secrets — never commit
 providers.json
+providers.*.json
+.env
+.env.*
+*.env
+*.key
+api_keys*.json
+secrets*.json
+
+# local runtime state (may contain private task texts)
 decisions.jsonl
+decisions.*.jsonl
+
+# python
 __pycache__/
 *.pyc
+
+# experiments scratch (resumable progress snapshots)
 experiments/results/progress_*
+
+# os / editor junk
+.DS_Store
+*.swp
