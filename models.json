@@ -6,15 +6,13 @@
       "key": "glm-flash",
       "id": "opencode/glm-5.3-flash-free",
       "name": "GLM-5.3-Flash Free",
-      "card": "Szybki darmowy model ogólnego przeznaczenia: rutynowe zadania, poprawki kodu, streszczenia, dobry polski tekst. Rozsądny wybór domyślny. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo; PDF; strukturalne wyjścia (JSON).",
+      "card": "Szybki darmowy model ogólnego przeznaczenia: rutynowe zadania, poprawki kodu, streszczenia, dobry polski tekst. Rozsądny wybór domyślny.",
       "runner": "opencode",
       "tags": [
         "free",
         "default"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 32000,
         "cost_input": 0,
@@ -28,22 +26,21 @@
           "strukturalne wyjścia (JSON)"
         ],
         "canonical_model_id": "zhipuai/glm-5.3-flash",
-        "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks"
+        "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "deepseek-flash",
       "id": "opencode/deepseek-v4.1-flash-free",
       "name": "DeepSeek V4.1 Flash Free",
-      "card": "Programowanie i inżynieria kodu: pisanie, analiza, debugowanie, refaktoryzacja, testy. Szybki i tani. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON).",
+      "card": "Programowanie i inżynieria kodu: pisanie, analiza, debugowanie, refaktoryzacja, testy. Szybki i tani.",
       "runner": "opencode",
       "tags": [
         "free",
         "code"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 32000,
         "cost_input": 0,
@@ -55,22 +52,21 @@
           "strukturalne wyjścia (JSON)"
         ],
         "canonical_model_id": "deepseek/deepseek-v4.1-flash",
-        "description_full": "DeepSeek V4.1 Flash model for reasoning and agentic coding"
+        "description_full": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "nemotron-ultra",
       "id": "opencode/nemotron-3-ultra-free",
       "name": "Nemotron 3 Ultra Free",
-      "card": "Najmocniejszy darmowy: trudne rozumowanie, architektura systemów, planowanie, analiza. Najwolniejszy - używaj tylko do naprawdę trudnych zadań. Kontekst: 1000000, wyjście: 128000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling).",
+      "card": "Najmocniejszy darmowy: trudne rozumowanie, architektura systemów, planowanie, analiza. Najwolniejszy - używaj tylko do naprawdę trudnych zadań.",
       "runner": "opencode",
       "tags": [
         "free",
         "reasoning"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 128000,
         "cost_input": 0,
@@ -80,22 +76,21 @@
           "narzędzia (function calling)"
         ],
         "canonical_model_id": "nvidia/nemotron-3-ultra-550b-a55b",
-        "description_full": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy"
+        "description_full": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "nemotron-lightning",
       "id": "opencode/nemotron-3.5-lightning-free",
       "name": "Nemotron 3.5 Lightning Free",
-      "card": "Szybkie zadania codzienne wymagające lepszej jakości niż najmniejsze modele: duża przepustowość, krótkie konteksty. Kontekst: 262144, wyjście: 262144, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
+      "card": "Szybkie zadania codzienne wymagające lepszej jakości niż najmniejsze modele: duża przepustowość, krótkie konteksty.",
       "runner": "opencode",
       "tags": [
         "free",
         "fast"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 262144,
         "output": 262144,
         "cost_input": 0,
@@ -106,22 +101,21 @@
           "strukturalne wyjścia (JSON)"
         ],
         "canonical_model_id": "nvidia/nemotron-3.5-lightning",
-        "description_full": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads"
+        "description_full": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "nemotron-vl",
       "id": "opencode/nemotron-3.5-super-vl-free",
       "name": "Nemotron 3.5 Super VL Free",
-      "card": "Obrazy i dokumenty wizualne: zrzuty ekranu, skany, wykresy, OCR, opisywanie zdjęć (vision). Kontekst: 1048576, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision).",
+      "card": "Obrazy i dokumenty wizualne: zrzuty ekranu, skany, wykresy, OCR, opisywanie zdjęć (vision).",
       "runner": "opencode",
       "tags": [
         "free",
         "vision"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 1048576,
         "output": 131072,
         "cost_input": 0,
@@ -132,22 +126,21 @@
           "obrazy (vision)"
         ],
         "canonical_model_id": "nvidia/nemotron-3.5-super-vl-120b-a12b",
-        "description_full": "NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use"
+        "description_full": "NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "longcat",
       "id": "opencode/longcat-2.5-preview-free",
       "name": "LongCat 2.5 Preview Free",
-      "card": "Bardzo długi kontekst: analiza długich dokumentów, logów, wielu plików naraz. Kontekst: 1000000, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision).",
+      "card": "Bardzo długi kontekst: analiza długich dokumentów, logów, wielu plików naraz.",
       "runner": "opencode",
       "tags": [
         "free",
         "long-context"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 131072,
         "cost_input": 0,
@@ -158,22 +151,21 @@
           "obrazy (vision)"
         ],
         "canonical_model_id": "meituan/longcat-2.5-preview",
-        "description_full": "Meituan's multimodal reasoning model for coding and agent tasks, with image understanding and a 1M-token context window"
+        "description_full": "Meituan's multimodal reasoning model for coding and agent tasks, with image understanding and a 1M-token context window",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "minimax-flash",
       "id": "opencode/minimax-m3.1-flash-free",
       "name": "MiniMax M3.1 Flash Free",
-      "card": "Frontowy model multimodalny do kodu z regulowaną głębokością rozumowania: do zadań wymagających wyższej jakości. Kontekst: 1000000, wyjście: 512000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo.",
+      "card": "Frontowy model multimodalny do kodu z regulowaną głębokością rozumowania: do zadań wymagających wyższej jakości.",
       "runner": "opencode",
       "tags": [
         "free",
         "fast"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 512000,
         "cost_input": 0,
@@ -185,22 +177,21 @@
           "wideo"
         ],
         "canonical_model_id": "minimax/MiniMax-M3.1-Flash",
-        "description_full": "Frontier multimodal coding model with 1M context window and tunable thinking depth"
+        "description_full": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "mimo-flash",
       "id": "opencode/mimo-v2.6-flash-free",
       "name": "MiMo-V2.6-Flash Free",
-      "card": "Najszybsza klasa flash: krótkie odpowiedzi, proste automatyzacje i lekkie zadania tekstowe. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo.",
+      "card": "Najszybsza klasa flash: krótkie odpowiedzi, proste automatyzacje i lekkie zadania tekstowe.",
       "runner": "opencode",
       "tags": [
         "free",
         "fast"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 32000,
         "cost_input": 0,
@@ -212,22 +203,21 @@
           "wideo"
         ],
         "canonical_model_id": "xiaomi/mimo-v2.6-flash",
-        "description_full": "MiMo Flash model for multimodal coding agents and long-context automation"
+        "description_full": "MiMo Flash model for multimodal coding agents and long-context automation",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "beam",
       "id": "opencode/beam-free",
       "name": "Beam Free",
-      "card": "Sparse MoE (23B aktywnych parametrów) do rozumowania i przepływów agentowych: złożone analizy i praca z narzędziami. Kontekst: 1048576, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
+      "card": "Sparse MoE (23B aktywnych parametrów) do rozumowania i przepływów agentowych: złożone analizy i praca z narzędziami.",
       "runner": "opencode",
       "tags": [
         "free",
         "research"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 1048576,
         "output": 131072,
         "cost_input": 0,
@@ -238,22 +228,21 @@
           "strukturalne wyjścia (JSON)"
         ],
         "canonical_model_id": "reflection/beam-1.0-501b-a23b",
-        "description_full": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows"
+        "description_full": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "big-pickle",
       "id": "opencode/big-pickle",
       "name": "Big Pickle",
-      "card": "Model deliberacyjny: wielokrokowa analiza, rozwiązywanie problemów i praca z narzędziami. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
+      "card": "Model deliberacyjny: wielokrokowa analiza, rozwiązywanie problemów i praca z narzędziami.",
       "runner": "opencode",
       "tags": [
         "free",
         "creative"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 32000,
         "cost_input": 0,
@@ -264,22 +253,21 @@
           "strukturalne wyjścia (JSON)"
         ],
         "canonical_model_id": null,
-        "description_full": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
+        "description_full": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "or-free",
       "id": "openrouter/openrouter/free",
       "name": "Free Models Router",
-      "card": "Automatyczny wybór aktualnie dostępnego darmowego modelu przez OpenRouter; gdy brak wyraźnego faworyta. Kontekst: 200000, wyjście: 8000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON).",
+      "card": "Automatyczny wybór aktualnie dostępnego darmowego modelu przez OpenRouter; gdy brak wyraźnego faworyta.",
       "runner": "opencode",
       "tags": [
         "free",
         "fallback"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 8000,
         "cost_input": 0,
@@ -291,14 +279,15 @@
           "strukturalne wyjścia (JSON)"
         ],
         "canonical_model_id": null,
-        "description_full": "Multimodal reasoning model for visual analysis, planning, and tool use"
+        "description_full": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "nim-nemotron-70b",
       "id": "nvidia/llama-3.1-nemotron-70b-instruct",
       "name": "Llama 3.1 Nemotron 70B Instruct",
-      "card": "Model 70B przez własny klucz NVIDIA NIM: poważne rozumowanie, analiza i kod, gdy darmowe endpointy opencode nie wystarczają; bez limitów i kolejek opencode. Kontekst: 128000, wyjście: 8192, darmowy. Możliwości: narzędzia (function calling).",
+      "card": "Model 70B przez własny klucz NVIDIA NIM: poważne rozumowanie, analiza i kod, gdy darmowe endpointy opencode nie wystarczają; bez limitów i kolejek opencode.",
       "runner": "direct",
       "provider": "nvidia",
       "model": "nvidia/llama-3.1-nemotron-70b-instruct",
@@ -307,8 +296,6 @@
         "reasoning"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 128000,
         "output": 8192,
         "cost_input": 0,
@@ -317,14 +304,15 @@
           "narzędzia (function calling)"
         ],
         "canonical_model_id": "nvidia/llama-3.1-nemotron-70b-instruct",
-        "description_full": "Nemotron model for efficient reasoning, coding, and specialized AI agents"
+        "description_full": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "nim-glm-flash",
       "id": "nvidia/z-ai/glm-5.3-flash",
       "name": "GLM-5.3-Flash",
-      "card": "Ten sam profil co darmowy GLM Flash, ale przez własny klucz NIM: stabilny, do zadań, które nie mogą czekać na darmowy endpoint. Kontekst: 1000000, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo; PDF; strukturalne wyjścia (JSON).",
+      "card": "Ten sam profil co darmowy GLM Flash, ale przez własny klucz NIM: stabilny, do zadań, które nie mogą czekać na darmowy endpoint.",
       "runner": "direct",
       "provider": "nvidia",
       "model": "z-ai/glm-5.3-flash",
@@ -333,8 +321,6 @@
         "default"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 131072,
         "cost_input": 0,
@@ -348,14 +334,15 @@
           "strukturalne wyjścia (JSON)"
         ],
         "canonical_model_id": "zhipuai/glm-5.3-flash",
-        "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks"
+        "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
       "key": "nim-deepseek-flash",
       "id": "nvidia/deepseek-ai/deepseek-v4.1-flash",
       "name": "DeepSeek V4.1 Flash",
-      "card": "Szybkie zadania programistyczne przez własny klucz NIM: gdy limit darmowego endpointu opencode się wyczerpie. Kontekst: 1000000, wyjście: 384000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON).",
+      "card": "Szybkie zadania programistyczne przez własny klucz NIM: gdy limit darmowego endpointu opencode się wyczerpie.",
       "runner": "direct",
       "provider": "nvidia",
       "model": "deepseek-ai/deepseek-v4.1-flash",
@@ -364,8 +351,6 @@
         "code"
       ],
       "meta": {
-        "card_source": "hybrid: manual role + models.dev facts",
-        "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 384000,
         "cost_input": 0,
@@ -377,7 +362,8 @@
           "strukturalne wyjścia (JSON)"
         ],
         "canonical_model_id": "deepseek/deepseek-v4.1-flash",
-        "description_full": "DeepSeek V4.1 Flash model for reasoning and agentic coding"
+        "description_full": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     },
     {
@@ -390,7 +376,7 @@
         "local"
       ],
       "meta": {
-        "card_source": "manual"
+        "card_source": "manual-v2 (role wg realnych profili models.dev; fakty w meta)"
       }
     }
   ]

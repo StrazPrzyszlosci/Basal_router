@@ -2,3 +2,4 @@ providers.json
 decisions.jsonl
 __pycache__/
 *.pyc
+experiments/results/progress_*
