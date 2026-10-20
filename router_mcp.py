@@ -1,8 +1,8 @@
 #!/home/krzysiek/basal-env/bin/python
-"""Serwer MCP routera modeli (stdio): recommend, pool, route, models, run.
+"""Router MCP server (stdio): recommend, pool, route, models, run.
 
-BASAL_ROUTER_POOL=opencode → rekomendacja i pula darmowych modeli opencode CLI
-BASAL_ROUTER_POOL=registry (domyślnie) → cała pula rejestru models.json
+BASAL_ROUTER_POOL=opencode → recommendations and the pool come from the opencode CLI free models
+BASAL_ROUTER_POOL=registry (default) → the full models.json registry pool
 """
 import json
 import os
@@ -35,14 +35,14 @@ def pool_ids():
 
 @mcp.tool()
 def pool() -> str:
-    """Lista darmowych modeli dostępnych w tym kliencie (pula)."""
+    """Lists the free models available in this client (the pool)."""
     ids = pool_ids()
     return json.dumps({"pool": POOL, "count": len(ids), "models": ids}, ensure_ascii=False, indent=1)
 
 
 @mcp.tool()
 def recommend(task: str) -> str:
-    """Rekomenduje darmowy model do zadania z puli TEGO klienta; zwraca id do przełączenia modelu."""
+    """Recommends a free model for the task from THIS client's pool; returns the id to switch to."""
     decision = router.route(task)
     data = router.load_registry()
     by_key = {m["key"]: m for m in data["models"]}
@@ -56,7 +56,7 @@ def recommend(task: str) -> str:
         "switch_to": entry["id"],
         "model_key": chosen,
         "how": f"opencode: /model {entry['id']}" if POOL == "opencode"
-               else "kilo: wybierz model w pickerze (/models) albo router/auto",
+               else "kilo: pick the model in the picker (/models) or use router/auto",
         "deferred": decision["deferred"],
         "confidence": decision["confidence"],
         "ranking": [{"key": r["model"], "id": r["model_id"], "probability": r["probability"]}
@@ -66,7 +66,7 @@ def recommend(task: str) -> str:
 
 @mcp.tool()
 def models() -> str:
-    """Lista modeli z rejestru routera; karty opisują, do jakich zadań pasuje każdy model."""
+    """Lists the registry models; the cards describe which tasks each model fits."""
     return json.dumps(
         [{k: m[k] for k in ("key", "id", "name", "card", "runner")}
          for m in router.load_registry()["models"]],
@@ -76,13 +76,13 @@ def models() -> str:
 
 @mcp.tool()
 def route(task: str) -> str:
-    """Wybiera optymalny darmowy model do zadania. Zwraca model, confidence, ranking i flagę deferred."""
+    """Picks the optimal free model for the task. Returns model, confidence, ranking and the deferred flag."""
     return json.dumps(router.route(task), ensure_ascii=False, indent=2)
 
 
 @mcp.tool()
 def run(task: str, model: str = "", timeout_s: int = 600) -> str:
-    """Uruchamia zadanie na wybranym modelu: darmowe przez opencode CLI, pozostałe przez klucz z providers.json."""
+    """Runs the task on the chosen model: free ones via opencode CLI, others via the key from providers.json."""
     key = model.strip() or router.route(task)["model"]
     try:
         return router.execute(key, task, timeout_s)

@@ -1,5 +1,5 @@
 #!/home/krzysiek/basal-env/bin/python
-"""Router darmowych modeli na silniku decyzyjnym Basal 2.2 (lokalny basal-serve)."""
+"""Free-model router on the Basal 2.2 decision engine (local basal-serve)."""
 import json
 import os
 import subprocess
@@ -17,16 +17,16 @@ BASAL_URL = os.environ.get("BASAL_URL", "http://127.0.0.1:8000")
 PROVIDERS_PATH = DIR / "providers.json"
 OPENCODE = "/home/krzysiek/.opencode/bin/opencode"
 INSTRUCTIONS = (
-    "Wybierz model, który najlepiej obsłuży zadanie opisane w stanie. Uwzględnij typ zadania "
-    "(kod, tekst, obraz, research, długi dokument), wymaganą głębokość rozumowania, szybkość "
-    "i koszt. Dla prostych zadań wybierz najszybszy wystarczający model."
+    "Choose the model that best handles the task described in the state. Consider the task type "
+    "(code, text, image, research, long document), the required depth of reasoning, speed and cost. "
+    "For simple tasks choose the fastest sufficient model."
 )
 
 
 def load_registry():
     data = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
     if len(data["models"]) > 20:
-        raise SystemExit("tryb ollama odczytuje co najwyżej 20 opcji: zredukuj models.json")
+        raise SystemExit("ollama mode reads at most 20 options: trim models.json")
     return data
 
 
@@ -89,7 +89,7 @@ def load_providers():
 def execute(model_key, task, timeout_s=600):
     entry = next((m for m in load_registry()["models"] if m["key"] == model_key), None)
     if entry is None:
-        raise RuntimeError(f"nieznany model: {model_key}")
+        raise RuntimeError(f"unknown model: {model_key}")
     runner = entry.get("runner", "opencode")
     if runner == "opencode":
         proc = subprocess.run(
@@ -98,11 +98,11 @@ def execute(model_key, task, timeout_s=600):
         )
         if proc.stdout.strip():
             return proc.stdout[-20000:]
-        raise RuntimeError(f"opencode bez wyniku: {proc.stderr[-500:] or '(brak stderr)'}")
+        raise RuntimeError(f"opencode returned no output: {proc.stderr[-500:] or '(no stderr)'}")
     if runner == "direct":
         provider = load_providers().get(entry.get("provider"), {})
         if not provider.get("apiKey"):
-            raise RuntimeError(f"brak klucza API dla '{entry.get('provider')}': uzupełnij providers.json")
+            raise RuntimeError(f"missing API key for '{entry.get('provider')}': fill in providers.json")
         response = httpx.post(
             f"{provider['baseURL'].rstrip('/')}/chat/completions",
             headers={"Authorization": f"Bearer {provider['apiKey']}"},
@@ -112,7 +112,7 @@ def execute(model_key, task, timeout_s=600):
         )
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
-    raise RuntimeError(f"nieznany runner: {runner}")
+    raise RuntimeError(f"unknown runner: {runner}")
 
 
 def annotate():
@@ -124,15 +124,15 @@ def annotate():
         print("\n---", entry["id"], entry["ts"])
         print(entry["state"][:400])
         print("basal:", entry["chosen"], f"conf={entry['confidence']:.2f}")
-        print("opcje:", ", ".join(question["criteria"]))
-        answer = input("gold (enter=potwierdź basal, s=pomiń): ").strip()
+        print("options:", ", ".join(question["criteria"]))
+        answer = input("gold (enter=accept basal's pick, s=skip): ").strip()
         if answer.lower() == "s":
             continue
         question["gold"] = answer or entry["chosen"]
     with LOG_PATH.open("w", encoding="utf-8") as handle:
         for entry in lines:
             handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    print("zapisano", LOG_PATH)
+    print("saved", LOG_PATH)
 
 
 def main():
@@ -140,7 +140,7 @@ def main():
     if command == "route":
         task = " ".join(sys.argv[2:]).strip()
         if not task:
-            raise SystemExit('użycie: router.py route "opis zadania"')
+            raise SystemExit('usage: router.py route "task description"')
         print(json.dumps(route(task), ensure_ascii=False, indent=2))
     elif command == "models":
         for model in load_registry()["models"]:
@@ -148,7 +148,7 @@ def main():
     elif command == "annotate":
         annotate()
     else:
-        raise SystemExit("komendy: route | models | annotate")
+        raise SystemExit("commands: route | models | annotate")
 
 
 if __name__ == "__main__":

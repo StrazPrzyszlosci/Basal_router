@@ -1,11 +1,16 @@
 #!/home/krzysiek/basal-env/bin/python
-"""Badania konfiguracji routera: dokładność top-1, pewność, opóźnienia, progi automatyzacji.
+"""Router configuration research: top-1 accuracy, confidence, latency, automation thresholds.
 
-Konfiguracje (wybór: pierwszy argument, np. `run_experiments.py C1-manual-cards,C3-hybrid-cards`):
-  C1-manual-cards — karty ręczne (models.manual.json), baseline
-  C2-net-cards    — karty wyłącznie z models.dev (models.net.json)
-  C3-hybrid-cards — karty hybrydowe: rola wg realnych profili + fakty z models.dev (models.json)
-Goldy benchmarku (v2) oparte na realnych profilach z models.dev.
+Configs (pick with the first argument, e.g. `run_experiments.py C1-manual-cards,C5-english-cards`):
+  C1-manual-cards    — hand-written cards v1 (models.manual.json), baseline
+  C2-net-cards       — raw models.dev cards (models.net.json)
+  C3-hybrid-cards    — role + appended facts (models.hybrid.json)
+  C4-manual-v2-cards — manual-v2 cards, Polish (models.manual-v2.json)
+  C5-english-cards   — manual-v2 cards, English (models.json, production)
+
+`run_experiments.py report` regenerates RESULTS.md from all eval_*.jsonl files (no latency columns —
+latency is machine-load dependent; raw numbers live in experiments/results/last_run.json).
+Benchmark task texts are intentionally Polish: they are the router's real-world input language.
 """
 import json
 import socket
@@ -28,10 +33,11 @@ OUT.mkdir(exist_ok=True)
 TASKS = [json.loads(line) for line in (DIR / "benchmark_tasks.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
 FLOORS = (0.3, 0.45, 0.55, 0.7)
 CONFIGS = {
-    "C1-manual-cards": {"registry": "models.manual.json", "label": "karty ręczne (v1)"},
-    "C2-net-cards": {"registry": "models.net.json", "label": "karty z models.dev"},
-    "C3-hybrid-cards": {"registry": "models.hybrid.json", "label": "karty hybrydowe (rola + fakty)"},
-    "C4-manual-v2-cards": {"registry": "models.json", "label": "karty manual-v2 (produkcja)"},
+    "C1-manual-cards": {"registry": "models.manual.json", "label": "hand-written cards (v1)"},
+    "C2-net-cards": {"registry": "models.net.json", "label": "raw models.dev cards"},
+    "C3-hybrid-cards": {"registry": "models.hybrid.json", "label": "hybrid (role + facts)"},
+    "C4-manual-v2-cards": {"registry": "models.manual-v2.json", "label": "manual-v2 cards (Polish)"},
+    "C5-english-cards": {"registry": "models.json", "label": "manual-v2 cards (English, production)"},
 }
 
 
@@ -52,7 +58,7 @@ def run_config(name, registry_file):
     done = {r["id"] for r in rows if "error" not in r}
     for task in TASKS:
         if task["id"] in done:
-            print(f"[{name}] {task['id']}: pominięte (resume z progress file)", flush=True)
+            print(f"[{name}] {task['id']}: skipped (resumed from progress file)", flush=True)
             continue
         request = {"state": task["task"], "lang": "pl",
                    "questions": {"model": {"type": "choice", "instructions": router.INSTRUCTIONS,
@@ -73,7 +79,7 @@ def run_config(name, registry_file):
             row = {"id": task["id"], "profile": task["profile"], "gold": task["gold"],
                    "error": str(exc), "wall_s": round(time.time() - t0, 1)}
         rows.append(row)
-        (OUT / f"progress_{name}.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+        progress_path.write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
         if "error" in row:
             print(f"[{name}] {row['id']}: ERROR {row['error']}", flush=True)
         else:
@@ -93,10 +99,10 @@ def run_config(name, registry_file):
 def summarize(rows):
     ok = [r for r in rows if "error" not in r]
     if not ok:
-        return {"top1_accuracy": None, "note": "brak udanych pomiarów"}
+        return {"top1_accuracy": None, "note": "no successful measurements"}
     correct = [r for r in ok if r["chosen"] == r["gold"]]
     wrong = [r for r in ok if r["chosen"] != r["gold"]]
-    lat = sorted(r["latency_ms"] or 0 for r in ok)
+    lat = sorted(r.get("latency_ms") or 0 for r in ok)
     floors = {}
     for floor in FLOORS:
         auto = [r for r in ok if r["confidence"] >= floor]
@@ -110,64 +116,118 @@ def summarize(rows):
         "top1_accuracy": round(len(correct) / len(ok), 3),
         "mean_conf_correct": round(statistics.mean(r["confidence"] for r in correct), 3) if correct else None,
         "mean_conf_wrong": round(statistics.mean(r["confidence"] for r in wrong), 3) if wrong else None,
-        "median_latency_ms": round(statistics.median(lat)) if lat else None,
-        "p90_latency_ms": round(lat[int(0.9 * (len(lat) - 1))]) if lat else None,
+        "median_latency_ms": round(statistics.median(lat)) if any(lat) else None,
+        "p90_latency_ms": round(lat[int(0.9 * (len(lat) - 1))]) if any(lat) else None,
         "floors": floors,
     }
 
 
-def render_md(results, rows_by_config):
-    names = list(results)
-    lines = ["# Wyniki badań konfiguracji routera", "",
-             f"Data: {datetime.now().strftime('%Y-%m-%d %H:%M')} · {socket.gethostname()} "
-             "(Intel i3-10110U, 4 wątki, RAM pod obciążeniem) · basal-2.0-mini 1.5B Q8_0 przez Ollamę · "
-             f"benchmark v2: {len(TASKS)} zadań, 15 opcji, goldy wg realnych profili models.dev", ""]
-    lines += ["Przebiegi: " + ", ".join(f"**{n}** ({CONFIGS[n]['label']})" for n in names) + ".", ""]
-    lines += ["## Zbiorczo", "",
-              "| konfiguracja | top-1 | śr. pewność trafnych | śr. pewność błędnych | mediana [ms] | p90 [ms] |",
-              "|---|---|---|---|---|---|"]
+def rows_from_eval():
+    bench = {t["task"]: t for t in TASKS}
+    configs, excluded = {}, []
+    for path in sorted(OUT.glob("eval_*.jsonl")):
+        name = path.stem.replace("eval_", "")
+        rows, stale = [], False
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            e = json.loads(line)
+            task = bench.get(e["state"])
+            question = e["questions"]["model"]
+            if task and question.get("gold") != task["gold"]:
+                stale = True
+                break
+            rows.append({"id": task["id"] if task else "?",
+                         "profile": task["profile"] if task else "?",
+                         "gold": question.get("gold"),
+                         "chosen": e.get("chosen"),
+                         "confidence": e.get("confidence") or 0})
+        if stale:
+            excluded.append(name)
+            continue
+        if rows:
+            configs[name] = rows
+    return configs, excluded
+
+
+def header_lines(results, with_latency):
+    lines = ["# Router configuration research results", "",
+             f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')} · {socket.gethostname()} "
+             "(Intel i3-10110U, 4 threads, RAM under load) · basal-2.0-mini 1.5B Q8_0 via Ollama · "
+             f"benchmark v2: {len(TASKS)} tasks, gold labels follow real models.dev profiles", "",
+             "Configs: " + ", ".join(f"**{n}** ({CONFIGS.get(n, {}).get('label', n)})"
+                                     for n in results) + ".", ""]
+    if not with_latency:
+        lines += ["Report regenerated from all `eval_*.jsonl` measurement sets; latency columns omitted "
+                  "(machine-load dependent — raw numbers in `experiments/results/last_run.json`).", ""]
+    lines += ["## Summary", ""]
+    if with_latency:
+        lines += ["| config | n | top-1 | mean conf (correct) | mean conf (wrong) | median [ms] | p90 [ms] |",
+                  "|---|---|---|---|---|---|---|"]
+    else:
+        lines += ["| config | n | top-1 | mean conf (correct) | mean conf (wrong) |",
+                  "|---|---|---|---|---|"]
     for name, s in results.items():
-        lines.append(f"| {name} ({CONFIGS[name]['label']}) | {s['top1_accuracy']} | {s['mean_conf_correct']} | "
-                     f"{s['mean_conf_wrong']} | {s['median_latency_ms']} | {s['p90_latency_ms']} |")
-    lines += ["", "## Progi automatyzacji (decyzja pewna, gdy confidence ≥ próg)", "",
-              "| konfiguracja | próg | % zautomatyzowanych | błędy wśród zautomatyzowanych |", "|---|---|---|---|"]
+        label = CONFIGS.get(name, {}).get("label", name)
+        cells = (f"| {name} ({label}) | {s['n']} | {s['top1_accuracy']} | "
+                 f"{s['mean_conf_correct']} | {s['mean_conf_wrong']} |")
+        if with_latency:
+            cells += f" {s['median_latency_ms']} | {s['p90_latency_ms']} |"
+        lines.append(cells)
+    lines += ["", "## Automation thresholds (a decision is automated when confidence >= threshold)", "",
+              "| config | threshold | automated % | errors among automated |", "|---|---|---|---|"]
     for name, s in results.items():
         for floor, d in s.get("floors", {}).items():
             lines.append(f"| {name} | {floor} | {d['automation_rate'] * 100:.0f}% | "
                          f"{d['errors_among_automated']} (rate {d['error_rate_among_automated']}) |")
-    lines += ["", "## Per zadanie", ""]
-    header = "| id | profil | gold | " + " | ".join(f"{n}" for n in names) + " |"
+    lines += ["", "## Per task", ""]
+    names = list(results)
+    header = "| id | profile | gold | " + " | ".join(names) + " |"
     lines += [header, "|---|---|---|" + "|---|" * len(names)]
+    return lines
+
+
+def per_task_lines(results, rows_by_config):
+    names = list(results)
     by_config = {n: {r["id"]: r for r in rows_by_config.get(n, [])} for n in names}
-
-    def fmt(row):
-        if not row or "error" in row:
-            return "ERR"
-        mark = "✓" if row.get("chosen") == row.get("gold") else "✗"
-        return f"{mark} {row.get('chosen')} ({row.get('confidence', 0):.2f})"
-
+    lines = []
     for task in TASKS:
-        cells = " | ".join(fmt(by_config[n].get(task["id"])) for n in names)
-        lines.append(f"| {task['id']} | {task['profile']} | {task['gold']} | {cells} |")
-    lines += ["", "Goldy v2 wg realnych profili models.dev (rewizja: t07 beam→nemotron-ultra, "
-              "t10 big-pickle→glm-flash). Historyczny wynik C2-net-cards na benchmarku v1: 0/10 "
-              "(poprzedni run, w historii gita).", ""]
-    if len(names) == 1:
-        lines.append("Uwaga: przebieg jednej konfiguracji — porównanie z pozostałymi w poprzednich RESULTS "
-                     "(historia gita) lub dociągnij `run_experiments.py <lista-konfiguracji>`.", "")
-    lines += ["Surowe pomiary: `experiments/results/last_run.json`; `eval_*.jsonl` to gotowy input dla "
-              "`basal-calibrate` i pod zbiór ewaluacyjny GEPA.", ""]
-    return "\n".join(lines)
+        cells = []
+        for n in names:
+            row = by_config.get(n, {}).get(task["id"])
+            if not row or not row.get("chosen"):
+                cells.append("ERR")
+                continue
+            mark = "OK" if row["chosen"] == task["gold"] else "MISS"
+            conf = row.get("confidence") or 0
+            cells.append(f"{mark} {row['chosen']} ({conf:.2f})")
+        lines.append(f"| {task['id']} | {task['profile']} | {task['gold']} | " + " | ".join(cells) + " |")
+    lines += ["", "Benchmark task texts are intentionally Polish (the router's real input language). "
+              "`eval_*.jsonl` files keep the exact prompts of each measurement and are ready input for "
+              "`basal-calibrate` and GEPA.", ""]
+    return lines
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "report":
+        configs, excluded = rows_from_eval()
+        results = {n: summarize(r) for n, r in configs.items()}
+        text = header_lines(results, with_latency=False)
+        if excluded:
+            text.append(f"Note: {', '.join(excluded)} measured under older gold labels — excluded from "
+                        "this report (kept in git history and in the eval files).")
+            text.append("")
+        text += per_task_lines(results, configs)
+        (ROOT / "RESULTS.md").write_text("\n".join(text), encoding="utf-8")
+        print("DONE: " + str(ROOT / "RESULTS.md"), flush=True)
+        return
     if len(sys.argv) > 1 and sys.argv[1] != "all":
         selected = sys.argv[1].split(",")
     else:
         selected = list(CONFIGS)
     for name in selected:
         if name not in CONFIGS:
-            raise SystemExit(f"nieznana konfiguracja: {name}; dostępne: {', '.join(CONFIGS)}")
+            raise SystemExit(f"unknown config: {name}; available: {', '.join(CONFIGS)}")
     rows_by_config, results = {}, {}
     for name in selected:
         rows_by_config[name] = run_config(name, CONFIGS[name]["registry"])
@@ -177,8 +237,9 @@ def main():
                         "configs": {n: CONFIGS[n]["registry"] for n in selected}},
                "results": results, "rows": rows_by_config}
     (OUT / "last_run.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
-    (ROOT / "RESULTS.md").write_text(render_md(results, rows_by_config), encoding="utf-8")
-    print("GOTOWE: " + str(ROOT / "RESULTS.md"), flush=True)
+    text = header_lines(results, with_latency=True) + per_task_lines(results, rows_by_config)
+    (ROOT / "RESULTS.md").write_text("\n".join(text), encoding="utf-8")
+    print("DONE: " + str(ROOT / "RESULTS.md"), flush=True)
 
 
 if __name__ == "__main__":

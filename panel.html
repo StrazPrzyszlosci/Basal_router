@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Basal Router — klucze providerów</title>
+<title>Basal Router — provider keys</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root { color-scheme: dark; }
@@ -27,23 +27,25 @@ button.ghost { background: #262b36; }
 </head>
 <body>
 <main>
-<h1>Basal Router — klucze providerów</h1>
-<p class="sub">Klucze zapisują się do <code>providers.json</code> (chmod&nbsp;600, poza repo). Panel słucha tylko na 127.0.0.1.
-Test wykonuje jednokenzowe zapytanie do modelu probe danego dostawcy. Rejestr zawiera wyłącznie modele darmowe i lokalne.</p>
+<h1>Basal Router — provider keys</h1>
+<p class="sub">Keys are saved to <code>providers.json</code> (chmod&nbsp;600, outside the repo). The panel listens
+on 127.0.0.1 only. The Test button sends a one-token request to the provider's probe model. The registry
+contains free and local models only.</p>
 <div id="providers"></div>
 <div class="card">
-<h2>dodaj dostawcę (OpenAI-compatible)</h2>
-<div class="url">Nowy wpis w providers.json; modele podpinasz w models.json polami "provider" i "runner": "direct".</div>
+<h2>add a provider (OpenAI-compatible)</h2>
+<div class="url">Creates a new entry in providers.json; wire models to it in models.json with the "provider" field and "runner": "direct".</div>
 <div class="row">
-  <input id="n-name" placeholder="nazwa (np. groq)" style="width:150px">
+  <input id="n-name" placeholder="name (e.g. groq)" style="width:150px">
   <input id="n-url" placeholder="https://.../v1" style="flex:1;min-width:200px">
-  <input id="n-probe" placeholder="model probe (opcjonalnie)" style="width:210px">
-  <button class="ghost" onclick="addProvider()">Dodaj</button>
+  <input id="n-probe" placeholder="probe model (optional)" style="width:210px">
+  <button class="ghost" onclick="addProvider()">Add</button>
 </div>
 <div class="status" id="add-status"></div>
 </div>
-<p class="note">Bezpieczeństwo: klucze maskowane w API panelu, nigdy nie logowane; zapis chroniony nagłówkiem x-panel
-(przed CSRF) i sprawdzeniem Hosta (przed DNS-rebinding). Panel działa tylko lokalnie — nie wystawiaj go poza 127.0.0.1.</p>
+<p class="note">Security: keys are masked in the panel API and never logged; saves are protected by the
+x-panel header (against CSRF) and a Host check (against DNS rebinding). Local only — do not expose this
+panel beyond 127.0.0.1.</p>
 </main>
 <script>
 async function api(path, body) {
@@ -56,11 +58,11 @@ function card(p) {
     <h2>${p.name}</h2>
     <div class="url">${p.baseURL}${p.probe_model ? " · probe: " + p.probe_model : ""}</div>
     <div class="row">
-      <input class="key" type="password" id="key-${p.name}" placeholder="${p.hasKey ? "klucz zapisany: " + p.keyMask : "wklej klucz API"}">
-      <button onclick="save('${p.name}')">Zapisz</button>
+      <input class="key" type="password" id="key-${p.name}" placeholder="${p.hasKey ? "key saved: " + p.keyMask : "paste the API key"}">
+      <button onclick="save('${p.name}')">Save</button>
       <button class="ghost" onclick="test('${p.name}')">Test</button>
     </div>
-    <div class="status" id="st-${p.name}">${p.hasKey ? '<span class="ok">klucz zapisany (' + p.keyMask + ')</span>' : '<span class="err">brak klucza</span>'}</div>
+    <div class="status" id="st-${p.name}">${p.hasKey ? '<span class="ok">key saved (' + p.keyMask + ')</span>' : '<span class="err">no key</span>'}</div>
     ${p.models.length ? '<div class="chips">' + p.models.map(m => `<span class="chip">${m}</span>`).join("") + "</div>" : ""}
   </div>`;
 }
@@ -70,7 +72,7 @@ async function refresh() {
 }
 async function save(name) {
   const el = document.getElementById("st-" + name);
-  el.textContent = "zapisywanie…";
+  el.textContent = "saving…";
   try {
     await api("/panel/api/providers/" + name, {apiKey: document.getElementById("key-" + name).value});
     document.getElementById("key-" + name).value = "";
@@ -79,11 +81,11 @@ async function save(name) {
 }
 async function test(name) {
   const el = document.getElementById("st-" + name);
-  el.textContent = "test…";
+  el.textContent = "testing…";
   try {
     const t = await api(`/panel/api/providers/${name}/test`);
     el.innerHTML = t.ok ? `<span class="ok">OK · ${t.model} · ${t.latency_ms} ms</span>`
-                         : `<span class="err">BŁĄD ${t.status || ""} ${t.error || ""}</span>`;
+                         : `<span class="err">ERROR ${t.status || ""} ${t.error || ""}</span>`;
   } catch (e) { el.innerHTML = `<span class="err">${e}</span>`; }
 }
 async function addProvider() {
@@ -93,7 +95,7 @@ async function addProvider() {
       name: document.getElementById("n-name").value,
       baseURL: document.getElementById("n-url").value,
       probe_model: document.getElementById("n-probe").value});
-    st.innerHTML = '<span class="ok">dodano</span>';
+    st.innerHTML = '<span class="ok">added</span>';
     ["n-name", "n-url", "n-probe"].forEach(i => document.getElementById(i).value = "");
     await refresh();
   } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
