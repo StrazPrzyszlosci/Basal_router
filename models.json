@@ -6,14 +6,14 @@
       "key": "glm-flash",
       "id": "opencode/glm-5.3-flash-free",
       "name": "GLM-5.3-Flash Free",
-      "card": "Kontekst: 200k, wyjście: 32k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo; PDF; strukturalne wyjścia (JSON). Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+      "card": "Szybki darmowy model ogólnego przeznaczenia: rutynowe zadania, poprawki kodu, streszczenia, dobry polski tekst. Rozsądny wybór domyślny. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo; PDF; strukturalne wyjścia (JSON).",
       "runner": "opencode",
       "tags": [
         "free",
         "default"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 32000,
@@ -35,14 +35,14 @@
       "key": "deepseek-flash",
       "id": "opencode/deepseek-v4.1-flash-free",
       "name": "DeepSeek V4.1 Flash Free",
-      "card": "Kontekst: 200k, wyjście: 32k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON). DeepSeek V4.1 Flash model for reasoning and agentic coding",
+      "card": "Programowanie i inżynieria kodu: pisanie, analiza, debugowanie, refaktoryzacja, testy. Szybki i tani. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON).",
       "runner": "opencode",
       "tags": [
         "free",
         "code"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 32000,
@@ -62,14 +62,14 @@
       "key": "nemotron-ultra",
       "id": "opencode/nemotron-3-ultra-free",
       "name": "Nemotron 3 Ultra Free",
-      "card": "Kontekst: 1000k, wyjście: 128k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling). Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
+      "card": "Najmocniejszy darmowy: trudne rozumowanie, architektura systemów, planowanie, analiza. Najwolniejszy - używaj tylko do naprawdę trudnych zadań. Kontekst: 1000000, wyjście: 128000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling).",
       "runner": "opencode",
       "tags": [
         "free",
         "reasoning"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 128000,
@@ -87,14 +87,14 @@
       "key": "nemotron-lightning",
       "id": "opencode/nemotron-3.5-lightning-free",
       "name": "Nemotron 3.5 Lightning Free",
-      "card": "Kontekst: 262k, wyjście: 262k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON). Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
+      "card": "Szybkie zadania codzienne wymagające lepszej jakości niż najmniejsze modele: duża przepustowość, krótkie konteksty. Kontekst: 262144, wyjście: 262144, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
       "runner": "opencode",
       "tags": [
         "free",
         "fast"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 262144,
         "output": 262144,
@@ -113,14 +113,14 @@
       "key": "nemotron-vl",
       "id": "opencode/nemotron-3.5-super-vl-free",
       "name": "Nemotron 3.5 Super VL Free",
-      "card": "Kontekst: 1048k, wyjście: 131k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision). NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use",
+      "card": "Obrazy i dokumenty wizualne: zrzuty ekranu, skany, wykresy, OCR, opisywanie zdjęć (vision). Kontekst: 1048576, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision).",
       "runner": "opencode",
       "tags": [
         "free",
         "vision"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 1048576,
         "output": 131072,
@@ -139,14 +139,14 @@
       "key": "longcat",
       "id": "opencode/longcat-2.5-preview-free",
       "name": "LongCat 2.5 Preview Free",
-      "card": "Kontekst: 1000k, wyjście: 131k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision). Meituan's multimodal reasoning model for coding and agent tasks, with image understanding and a 1M-token context window",
+      "card": "Bardzo długi kontekst: analiza długich dokumentów, logów, wielu plików naraz. Kontekst: 1000000, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision).",
       "runner": "opencode",
       "tags": [
         "free",
         "long-context"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 131072,
@@ -165,14 +165,14 @@
       "key": "minimax-flash",
       "id": "opencode/minimax-m3.1-flash-free",
       "name": "MiniMax M3.1 Flash Free",
-      "card": "Kontekst: 1000k, wyjście: 512k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo. Frontier multimodal coding model with 1M context window and tunable thinking depth",
+      "card": "Lekkie zadania tekstowe, szybkie odpowiedzi, formatowanie, krótkie analizy. Kontekst: 1000000, wyjście: 512000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo.",
       "runner": "opencode",
       "tags": [
         "free",
         "fast"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 512000,
@@ -192,14 +192,14 @@
       "key": "mimo-flash",
       "id": "opencode/mimo-v2.6-flash-free",
       "name": "MiMo-V2.6-Flash Free",
-      "card": "Kontekst: 200k, wyjście: 32k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo. MiMo Flash model for multimodal coding agents and long-context automation",
+      "card": "Najprostsze i najkrótsze zadania: jednozdaniowe odpowiedzi, szybkie pytania, maksymalna szybkość. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo.",
       "runner": "opencode",
       "tags": [
         "free",
         "fast"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 32000,
@@ -219,14 +219,14 @@
       "key": "beam",
       "id": "opencode/beam-free",
       "name": "Beam Free",
-      "card": "Kontekst: 1048k, wyjście: 131k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON). Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
+      "card": "Research i deep research: wyszukiwanie, synteza wiedzy, raporty z wielu źródeł. Kontekst: 1048576, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
       "runner": "opencode",
       "tags": [
         "free",
         "research"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 1048576,
         "output": 131072,
@@ -245,14 +245,14 @@
       "key": "big-pickle",
       "id": "opencode/big-pickle",
       "name": "Big Pickle",
-      "card": "Kontekst: 200k, wyjście: 32k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON). Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+      "card": "Model społecznościowy do kreatywnego pisania, rozmowy i eksperymentów. Kontekst: 200000, wyjście: 32000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); strukturalne wyjścia (JSON).",
       "runner": "opencode",
       "tags": [
         "free",
         "creative"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 32000,
@@ -271,14 +271,14 @@
       "key": "or-free",
       "id": "openrouter/openrouter/free",
       "name": "Free Models Router",
-      "card": "Kontekst: 200k, wyjście: 8k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON). Multimodal reasoning model for visual analysis, planning, and tool use",
+      "card": "Automatyczny wybór aktualnie dostępnego darmowego modelu przez OpenRouter; gdy brak wyraźnego faworyta. Kontekst: 200000, wyjście: 8000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON).",
       "runner": "opencode",
       "tags": [
         "free",
         "fallback"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 200000,
         "output": 8000,
@@ -298,7 +298,7 @@
       "key": "nim-nemotron-70b",
       "id": "nvidia/llama-3.1-nemotron-70b-instruct",
       "name": "Llama 3.1 Nemotron 70B Instruct",
-      "card": "Kontekst: 128k, wyjście: 8k. Darmowy (0 zł). Możliwości: narzędzia (function calling). Nemotron model for efficient reasoning, coding, and specialized AI agents",
+      "card": "Model 70B przez własny klucz NVIDIA NIM: poważne rozumowanie, analiza i kod, gdy darmowe endpointy opencode nie wystarczają; bez limitów i kolejek opencode. Kontekst: 128000, wyjście: 8192, darmowy. Możliwości: narzędzia (function calling).",
       "runner": "direct",
       "provider": "nvidia",
       "model": "nvidia/llama-3.1-nemotron-70b-instruct",
@@ -307,7 +307,7 @@
         "reasoning"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 128000,
         "output": 8192,
@@ -324,7 +324,7 @@
       "key": "nim-glm-flash",
       "id": "nvidia/z-ai/glm-5.3-flash",
       "name": "GLM-5.3-Flash",
-      "card": "Kontekst: 1000k, wyjście: 131k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo; PDF; strukturalne wyjścia (JSON). Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+      "card": "Ten sam profil co darmowy GLM Flash, ale przez własny klucz NIM: stabilny, do zadań, które nie mogą czekać na darmowy endpoint. Kontekst: 1000000, wyjście: 131072, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); wideo; PDF; strukturalne wyjścia (JSON).",
       "runner": "direct",
       "provider": "nvidia",
       "model": "z-ai/glm-5.3-flash",
@@ -333,7 +333,7 @@
         "default"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 131072,
@@ -355,7 +355,7 @@
       "key": "nim-deepseek-flash",
       "id": "nvidia/deepseek-ai/deepseek-v4.1-flash",
       "name": "DeepSeek V4.1 Flash",
-      "card": "Kontekst: 1000k, wyjście: 384k. Darmowy (0 zł). Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON). DeepSeek V4.1 Flash model for reasoning and agentic coding",
+      "card": "Szybkie zadania programistyczne przez własny klucz NIM: gdy limit darmowego endpointu opencode się wyczerpie. Kontekst: 1000000, wyjście: 384000, darmowy. Możliwości: głębokie rozumowanie; narzędzia (function calling); obrazy (vision); strukturalne wyjścia (JSON).",
       "runner": "direct",
       "provider": "nvidia",
       "model": "deepseek-ai/deepseek-v4.1-flash",
@@ -364,7 +364,7 @@
         "code"
       ],
       "meta": {
-        "card_source": "models.dev",
+        "card_source": "hybrid: manual role + models.dev facts",
         "fetched": "2026-10-20 05:42",
         "context": 1000000,
         "output": 384000,

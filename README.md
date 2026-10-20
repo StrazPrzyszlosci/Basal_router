@@ -19,7 +19,10 @@ aplikacje (Kilo / opencode / hermes / cokolwiek OpenAI-compat)
 | `routerd.py` | endpoint OpenAI-compat (`/v1/chat/completions`, `/v1/models`); routing + fallback |
 | `router.py` | decyzje przez basal, wykonanie, log decyzji, CLI (`route`/`models`/`annotate`) |
 | `router_mcp.py` | serwer MCP `kilo-router` (route/models/run) |
-| `models.json` | rejestr modeli: karty (to je „widzi" basal), runnery; max 20 opcji |
+| `models.json` | rejestr produkcyjny: karty **hybrydowe** (rola + fakty z models.dev), runnery; max 20 opcji |
+| `models.manual.json` | karty ręczne — baseline badań (C1) |
+| `models.net.json` | karty wyłącznie z models.dev — wariant badawczy (C2) |
+| `sync_cards.py` | przebudowa kart z danych models.dev |
 | `providers.json` | **nie jest w repo** — klucze API providerów, chmod 600 |
 | `kilo.json` | integracja z Kilo: provider `router/auto` + MCP + uprawnienia |
 | `.kilo/command/route.md` | komenda `/route <zadanie>` |

@@ -1,0 +1,550 @@
+{
+ "meta": {
+  "ts": "2026-10-20T06:07:49.852184",
+  "host": "krzysiek-hpe820g3",
+  "model": "basal-2.0-mini 1.5B Q8_0 (ollama)",
+  "tasks": 10,
+  "configs": {
+   "C1-manual-cards": "models.manual.json",
+   "C2-net-cards": "models.json"
+  }
+ },
+ "results": {
+  "C1-manual-cards": {
+   "n": 10,
+   "request_errors": 0,
+   "top1_accuracy": 0.6,
+   "mean_conf_correct": 0.685,
+   "mean_conf_wrong": 0.32,
+   "median_latency_ms": 36709,
+   "p90_latency_ms": 37553,
+   "floors": {
+    "0.3": {
+     "automated": 7,
+     "automation_rate": 0.7,
+     "errors_among_automated": 1,
+     "error_rate_among_automated": 0.143
+    },
+    "0.45": {
+     "automated": 6,
+     "automation_rate": 0.6,
+     "errors_among_automated": 1,
+     "error_rate_among_automated": 0.167
+    },
+    "0.55": {
+     "automated": 4,
+     "automation_rate": 0.4,
+     "errors_among_automated": 1,
+     "error_rate_among_automated": 0.25
+    },
+    "0.7": {
+     "automated": 3,
+     "automation_rate": 0.3,
+     "errors_among_automated": 0,
+     "error_rate_among_automated": 0.0
+    }
+   }
+  },
+  "C2-net-cards": {
+   "n": 10,
+   "request_errors": 0,
+   "top1_accuracy": 0.0,
+   "mean_conf_correct": null,
+   "mean_conf_wrong": 0.172,
+   "median_latency_ms": 63550,
+   "p90_latency_ms": 69317,
+   "floors": {
+    "0.3": {
+     "automated": 0,
+     "automation_rate": 0.0,
+     "errors_among_automated": 0,
+     "error_rate_among_automated": null
+    },
+    "0.45": {
+     "automated": 0,
+     "automation_rate": 0.0,
+     "errors_among_automated": 0,
+     "error_rate_among_automated": null
+    },
+    "0.55": {
+     "automated": 0,
+     "automation_rate": 0.0,
+     "errors_among_automated": 0,
+     "error_rate_among_automated": null
+    },
+    "0.7": {
+     "automated": 0,
+     "automation_rate": 0.0,
+     "errors_among_automated": 0,
+     "error_rate_among_automated": null
+    }
+   }
+  }
+ },
+ "rows": {
+  "C1-manual-cards": [
+   {
+    "id": "t01",
+    "profile": "code",
+    "gold": "deepseek-flash",
+    "chosen": "deepseek-flash",
+    "confidence": 0.45408523082733154,
+    "top3": [
+     [
+      "deepseek-flash",
+      0.4541
+     ],
+     [
+      "glm-flash",
+      0.1737
+     ],
+     [
+      "nemotron-lightning",
+      0.0935
+     ]
+    ],
+    "latency_ms": 35812.37,
+    "wall_s": 35.9
+   },
+   {
+    "id": "t02",
+    "profile": "code",
+    "gold": "deepseek-flash",
+    "chosen": "deepseek-flash",
+    "confidence": 0.37403637170791626,
+    "top3": [
+     [
+      "deepseek-flash",
+      0.374
+     ],
+     [
+      "nemotron-lightning",
+      0.1724
+     ],
+     [
+      "nim-glm-flash",
+      0.1377
+     ]
+    ],
+    "latency_ms": 34241.84,
+    "wall_s": 34.3
+   },
+   {
+    "id": "t03",
+    "profile": "vision",
+    "gold": "nemotron-vl",
+    "chosen": "nemotron-vl",
+    "confidence": 0.9573613405227661,
+    "top3": [
+     [
+      "nemotron-vl",
+      0.9574
+     ],
+     [
+      "mimo-flash",
+      0.0061
+     ],
+     [
+      "glm-flash",
+      0.0059
+     ]
+    ],
+    "latency_ms": 37552.59,
+    "wall_s": 37.6
+   },
+   {
+    "id": "t04",
+    "profile": "vision",
+    "gold": "nemotron-vl",
+    "chosen": "nemotron-vl",
+    "confidence": 0.9607253670692444,
+    "top3": [
+     [
+      "nemotron-vl",
+      0.9607
+     ],
+     [
+      "mimo-flash",
+      0.0058
+     ],
+     [
+      "nemotron-ultra",
+      0.0044
+     ]
+    ],
+    "latency_ms": 36946.64,
+    "wall_s": 37.0
+   },
+   {
+    "id": "t05",
+    "profile": "simple",
+    "gold": "mimo-flash",
+    "chosen": "mimo-flash",
+    "confidence": 0.4502236247062683,
+    "top3": [
+     [
+      "mimo-flash",
+      0.4502
+     ],
+     [
+      "minimax-flash",
+      0.3265
+     ],
+     [
+      "nim-glm-flash",
+      0.059
+     ]
+    ],
+    "latency_ms": 37085.87,
+    "wall_s": 37.1
+   },
+   {
+    "id": "t06",
+    "profile": "simple",
+    "gold": "minimax-flash",
+    "chosen": "mimo-flash",
+    "confidence": 0.28749340772628784,
+    "top3": [
+     [
+      "mimo-flash",
+      0.2875
+     ],
+     [
+      "minimax-flash",
+      0.2247
+     ],
+     [
+      "nim-glm-flash",
+      0.1742
+     ]
+    ],
+    "latency_ms": 32750.72,
+    "wall_s": 32.8
+   },
+   {
+    "id": "t07",
+    "profile": "research",
+    "gold": "beam",
+    "chosen": "nim-nemotron-70b",
+    "confidence": 0.17207582294940948,
+    "top3": [
+     [
+      "nim-nemotron-70b",
+      0.1721
+     ],
+     [
+      "qwen-local",
+      0.1504
+     ],
+     [
+      "glm-flash",
+      0.1266
+     ]
+    ],
+    "latency_ms": 33581.25,
+    "wall_s": 33.6
+   },
+   {
+    "id": "t08",
+    "profile": "reasoning",
+    "gold": "nemotron-ultra",
+    "chosen": "nim-nemotron-70b",
+    "confidence": 0.18035924434661865,
+    "top3": [
+     [
+      "nim-nemotron-70b",
+      0.1804
+     ],
+     [
+      "nemotron-lightning",
+      0.1621
+     ],
+     [
+      "longcat",
+      0.1244
+     ]
+    ],
+    "latency_ms": 36989.72,
+    "wall_s": 37.0
+   },
+   {
+    "id": "t09",
+    "profile": "long-context",
+    "gold": "longcat",
+    "chosen": "longcat",
+    "confidence": 0.9106652736663818,
+    "top3": [
+     [
+      "longcat",
+      0.9107
+     ],
+     [
+      "qwen-local",
+      0.0142
+     ],
+     [
+      "glm-flash",
+      0.0119
+     ]
+    ],
+    "latency_ms": 36471.05,
+    "wall_s": 36.5
+   },
+   {
+    "id": "t10",
+    "profile": "creative",
+    "gold": "big-pickle",
+    "chosen": "or-free",
+    "confidence": 0.6389027833938599,
+    "top3": [
+     [
+      "or-free",
+      0.6389
+     ],
+     [
+      "nim-nemotron-70b",
+      0.0983
+     ],
+     [
+      "nim-glm-flash",
+      0.0405
+     ]
+    ],
+    "latency_ms": 48296.4,
+    "wall_s": 48.3
+   }
+  ],
+  "C2-net-cards": [
+   {
+    "id": "t01",
+    "profile": "code",
+    "gold": "deepseek-flash",
+    "chosen": "glm-flash",
+    "confidence": 0.16555313766002655,
+    "top3": [
+     [
+      "glm-flash",
+      0.1656
+     ],
+     [
+      "nim-nemotron-70b",
+      0.1323
+     ],
+     [
+      "mimo-flash",
+      0.1144
+     ]
+    ],
+    "latency_ms": 79112.86,
+    "wall_s": 79.2
+   },
+   {
+    "id": "t02",
+    "profile": "code",
+    "gold": "deepseek-flash",
+    "chosen": "nemotron-lightning",
+    "confidence": 0.16526105999946594,
+    "top3": [
+     [
+      "nemotron-lightning",
+      0.1653
+     ],
+     [
+      "nim-nemotron-70b",
+      0.1439
+     ],
+     [
+      "nim-deepseek-flash",
+      0.0994
+     ]
+    ],
+    "latency_ms": 61915.76,
+    "wall_s": 62.0
+   },
+   {
+    "id": "t03",
+    "profile": "vision",
+    "gold": "nemotron-vl",
+    "chosen": "mimo-flash",
+    "confidence": 0.26054319739341736,
+    "top3": [
+     [
+      "mimo-flash",
+      0.2605
+     ],
+     [
+      "nemotron-lightning",
+      0.1213
+     ],
+     [
+      "glm-flash",
+      0.1002
+     ]
+    ],
+    "latency_ms": 65467.36,
+    "wall_s": 65.5
+   },
+   {
+    "id": "t04",
+    "profile": "vision",
+    "gold": "nemotron-vl",
+    "chosen": "mimo-flash",
+    "confidence": 0.173024520277977,
+    "top3": [
+     [
+      "mimo-flash",
+      0.173
+     ],
+     [
+      "nemotron-vl",
+      0.1135
+     ],
+     [
+      "nemotron-lightning",
+      0.1007
+     ]
+    ],
+    "latency_ms": 60520.13,
+    "wall_s": 60.6
+   },
+   {
+    "id": "t05",
+    "profile": "simple",
+    "gold": "mimo-flash",
+    "chosen": "nim-nemotron-70b",
+    "confidence": 0.17711962759494781,
+    "top3": [
+     [
+      "nim-nemotron-70b",
+      0.1771
+     ],
+     [
+      "mimo-flash",
+      0.1699
+     ],
+     [
+      "nemotron-lightning",
+      0.0968
+     ]
+    ],
+    "latency_ms": 69317.25,
+    "wall_s": 69.3
+   },
+   {
+    "id": "t06",
+    "profile": "simple",
+    "gold": "minimax-flash",
+    "chosen": "mimo-flash",
+    "confidence": 0.17987732589244843,
+    "top3": [
+     [
+      "mimo-flash",
+      0.1799
+     ],
+     [
+      "nim-nemotron-70b",
+      0.152
+     ],
+     [
+      "big-pickle",
+      0.1417
+     ]
+    ],
+    "latency_ms": 64391.4,
+    "wall_s": 64.4
+   },
+   {
+    "id": "t07",
+    "profile": "research",
+    "gold": "beam",
+    "chosen": "nim-glm-flash",
+    "confidence": 0.15413425862789154,
+    "top3": [
+     [
+      "nim-glm-flash",
+      0.1541
+     ],
+     [
+      "qwen-local",
+      0.1045
+     ],
+     [
+      "nemotron-lightning",
+      0.0981
+     ]
+    ],
+    "latency_ms": 62068.93,
+    "wall_s": 62.1
+   },
+   {
+    "id": "t08",
+    "profile": "reasoning",
+    "gold": "nemotron-ultra",
+    "chosen": "nim-glm-flash",
+    "confidence": 0.14294211566448212,
+    "top3": [
+     [
+      "nim-glm-flash",
+      0.1429
+     ],
+     [
+      "nemotron-lightning",
+      0.1184
+     ],
+     [
+      "minimax-flash",
+      0.1178
+     ]
+    ],
+    "latency_ms": 62708.46,
+    "wall_s": 62.7
+   },
+   {
+    "id": "t09",
+    "profile": "long-context",
+    "gold": "longcat",
+    "chosen": "nemotron-lightning",
+    "confidence": 0.1481395810842514,
+    "top3": [
+     [
+      "nemotron-lightning",
+      0.1481
+     ],
+     [
+      "glm-flash",
+      0.1379
+     ],
+     [
+      "mimo-flash",
+      0.1235
+     ]
+    ],
+    "latency_ms": 61738.64,
+    "wall_s": 61.8
+   },
+   {
+    "id": "t10",
+    "profile": "creative",
+    "gold": "big-pickle",
+    "chosen": "nim-glm-flash",
+    "confidence": 0.15397049486637115,
+    "top3": [
+     [
+      "nim-glm-flash",
+      0.154
+     ],
+     [
+      "or-free",
+      0.1455
+     ],
+     [
+      "mimo-flash",
+      0.1113
+     ]
+    ],
+    "latency_ms": 68404.75,
+    "wall_s": 68.4
+   }
+  ]
+ }
+}
