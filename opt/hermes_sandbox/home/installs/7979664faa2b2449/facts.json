@@ -1,0 +1,24 @@
+{
+  "packages": {
+    "venv": {
+      "environment": "/media/magazyn/home/teresa/Dokumenty/HYC/basal/opt/hermes_sandbox/home/installs/7979664faa2b2449/environments/aa729405911440d48a51927c1bca1ba0/venv",
+      "extras": [
+        "acp",
+        "all",
+        "bedrock",
+        "computer-use",
+        "doc-extract",
+        "edge-tts",
+        "google",
+        "vertex",
+        "vision",
+        "web",
+        "wecom",
+        "youtube"
+      ],
+      "resolved_lock": "/media/magazyn/home/teresa/Dokumenty/HYC/basal/opt/hermes_sandbox/home/installs/7979664faa2b2449/environments/aa729405911440d48a51927c1bca1ba0/workspace/uv.lock",
+      "stamp": "be63f220fe119a5a47257495513e0546c4284d534da81c0d9d8648ee9da84388"
+    }
+  },
+  "schema": 1
+}

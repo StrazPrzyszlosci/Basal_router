@@ -17,6 +17,8 @@ BASAL_URL = os.environ.get("BASAL_URL", "http://127.0.0.1:8000")
 PROVIDERS_PATH = DIR / "providers.json"
 SETTINGS_PATH = DIR / "settings.json"
 OPENCODE = "/home/krzysiek/.opencode/bin/opencode"
+HERMES = "/home/krzysiek/.local/bin/hermes"
+HERMES_SANDBOX = DIR / "opt" / "hermes_sandbox" / "home"
 NO_MODELS_HINT = ("No model could be executed. opencode free models require an active opencode session "
                   "(check `opencode auth list`); provider-key models (nim-*) need a key saved at "
                   "http://127.0.0.1:8788/panel (providers.json).")
@@ -172,11 +174,35 @@ def load_providers():
     return {}
 
 
-def execute(model_key, task, timeout_s=600):
+def execute_hermes(model_key, task, timeout_s=600):
+    """Run a task through the isolated Hermes agent: its own HERMES_HOME (no access to the user's
+    Hermes installation, config or rules), a fresh scratch working directory, a hard turn and
+    wall-clock budget, and one forced model via routerd (no re-routing recursion)."""
+    scratch = HERMES_SANDBOX.parent / "scratch" / time.strftime("%Y%m%d-%H%M%S")
+    scratch.mkdir(parents=True, exist_ok=True)
+    env = {**os.environ, "HERMES_HOME": str(HERMES_SANDBOX)}
+    budget = max(60, min(int(timeout_s), 900))
+    proc = subprocess.run(
+        [HERMES, "chat", "-Q", "--format", "text", "--query-file", "-",
+         "--provider", "custom", "--base-url", "http://127.0.0.1:8788/v1",
+         "--api-key", "router-local", "-m", f"router/{model_key}",
+         "--in", str(scratch),
+         "--ignore-user-config", "--ignore-rules", "--safe-mode"],
+        input=task, capture_output=True, text=True,
+        timeout=timeout_s + 60, env=env, cwd=str(scratch),
+    )
+    if proc.stdout.strip():
+        return proc.stdout[-20000:]
+    raise RuntimeError(f"hermes sandbox returned no output: {proc.stderr[-500:] or '(no stderr)'}")
+
+
+def execute(model_key, task, timeout_s=600, runner=None):
     entry = next((m for m in load_registry()["models"] if m["key"] == model_key), None)
     if entry is None:
         raise RuntimeError(f"unknown model: {model_key}")
-    runner = entry.get("runner", "opencode")
+    runner = runner or entry.get("runner", "opencode")
+    if runner == "hermes":
+        return execute_hermes(model_key, task, timeout_s)
     if runner == "opencode":
         proc = subprocess.run(
             [OPENCODE, "run", "-m", entry["id"], task],

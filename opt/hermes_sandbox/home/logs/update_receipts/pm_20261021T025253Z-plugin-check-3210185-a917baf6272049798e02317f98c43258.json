@@ -1,0 +1,16 @@
+{
+  "exit_code": 0,
+  "feature_list": null,
+  "finished_at": "2026-10-21T02:52:53.822155+00:00",
+  "kind": "plugin-check",
+  "outcome": "ok",
+  "platform": null,
+  "plugin_checks": [],
+  "refusal": null,
+  "schema": 1,
+  "started_at": "2026-10-21T02:52:53.821947+00:00",
+  "steps": [],
+  "update_id": null,
+  "venv_rebuild": null,
+  "warnings": []
+}

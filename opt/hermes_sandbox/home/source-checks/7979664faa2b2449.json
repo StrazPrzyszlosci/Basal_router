@@ -1,0 +1,32 @@
+{
+  "identity": {
+    "root": "/media/magazyn/home/teresa/krzysiek_apps/.hermes/hermes-agent",
+    "home": "/media/magazyn/home/teresa/Dokumenty/HYC/basal/opt/hermes_sandbox/home",
+    "head": "493208879a3248c6a4b844981d2c31c78ae00929",
+    "origin": "https://github.com/NousResearch/hermes-agent.git",
+    "branch": "main",
+    "channel": "stable",
+    "embedded": null,
+    "branchOverride": false,
+    "channelProtocol": 1,
+    "forwardOnly": true
+  },
+  "ts": 1792551177.798387,
+  "status": {
+    "supported": true,
+    "hermesRoot": "/media/magazyn/home/teresa/krzysiek_apps/.hermes/hermes-agent",
+    "behind": 0,
+    "commits": [],
+    "currentSha": "493208879a3248c6a4b844981d2c31c78ae00929",
+    "currentBranch": "main",
+    "dirty": true,
+    "channel": "stable",
+    "fetchedAt": 1792551177798,
+    "targetSha": "493208879a3248c6a4b844981d2c31c78ae00929",
+    "updateAvailable": false,
+    "sourceVersion": "0.22.2",
+    "buildId": null,
+    "aheadOfRelease": true,
+    "rollback": false
+  }
+}

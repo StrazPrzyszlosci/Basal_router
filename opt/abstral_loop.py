@@ -75,7 +75,7 @@ def run_pipeline(task, topo):
     """route -> run -> verify (-> escalate) under the current topology; returns a trace."""
     trace = {"model_calls": 1, "escalated": False}
     decision = router.route(task["task"])
-    answer = router.execute(decision["model"], task["task"])
+    answer = router.execute(decision["model"], task["task"], runner="hermes")
     trace.update({"chosen": decision["chosen_by_basal"], "confidence": round(decision["confidence"], 3),
                   "deferred": decision["deferred"]})
     verified = None
@@ -90,7 +90,8 @@ def run_pipeline(task, topo):
         verified = p_ok >= topo.get("verify_threshold", 0.6)
         trace["verify_p"] = round(p_ok, 3)
     if verified is False and topo.get("max_attempts", 2) > 1:
-        answer = router.execute(topo.get("escalation_model", "nemotron-ultra"), task["task"])
+        answer = router.execute(topo.get("escalation_model", "nemotron-ultra"), task["task"],
+                                 runner="hermes")
         trace["model_calls"] += 1
         trace["escalated"] = True
         verified = True

@@ -32,7 +32,7 @@ def route_node(state: RouterState) -> RouterState:
 
 
 def run_node(state: RouterState) -> RouterState:
-    answer = router.execute(state["decision"]["model"], state["task"], 600)
+    answer = router.execute(state["decision"]["model"], state["task"], 600, runner="hermes")
     return {"answer": answer}
 
 
@@ -53,7 +53,7 @@ def verify_node(state: RouterState) -> RouterState:
 
 
 def escalate_node(state: RouterState) -> RouterState:
-    answer = router.execute(ESCALATION_MODEL, state["task"], 600)
+    answer = router.execute(ESCALATION_MODEL, state["task"], 600, runner="hermes")
     return {"answer": answer, "verified": True}
 
 
