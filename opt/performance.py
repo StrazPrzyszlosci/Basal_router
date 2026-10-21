@@ -108,18 +108,22 @@ def speed_line(key):
 
 
 def refresh_lines():
-    """Idempotently rewrite the Speed(...) suffix of every card from measured data."""
+    """Idempotently maintain the Speed(...) data: shown in the panel via meta.display_speed;
+    appended to the card text only when settings.benchmarks_in_prompt is on (measured C6:
+    benchmark/speed text in the routing prompt slows decisions 3-8x and dilutes the signal)."""
     import sys
     sys.path.insert(0, str(ROOT))
     import router
+    in_prompt = router.load_settings().get("benchmarks_in_prompt", False)
     registry = router.load_registry()
     updated = {}
     for m in registry["models"]:
         card = m["card"].split(" Speed (measured")[0].rstrip()
         line = speed_line(m["key"])
-        if line:
+        if line and in_prompt:
             card = f"{card} {line}"
         m["card"] = card
+        m.setdefault("meta", {})["display_speed"] = line
         updated[m["key"]] = bool(line)
     router.REGISTRY_PATH.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
                                      encoding="utf-8")

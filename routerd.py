@@ -122,6 +122,7 @@ async def panel_get_settings(request):
         "hermes_enabled": settings.get("hermes_enabled", False),
         "measure_performance": settings.get("measure_performance", True),
         "skip_recently_failing": settings.get("skip_recently_failing", True),
+        "benchmarks_in_prompt": settings.get("benchmarks_in_prompt", False),
     }})
 
 
@@ -177,6 +178,8 @@ async def panel_save_settings(request):
         current["measure_performance"] = bool(body["measure_performance"])
     if "skip_recently_failing" in body:
         current["skip_recently_failing"] = bool(body["skip_recently_failing"])
+    if "benchmarks_in_prompt" in body:
+        current["benchmarks_in_prompt"] = bool(body["benchmarks_in_prompt"])
     save_settings_file(current)
     return await panel_get_settings(request)
 
@@ -423,6 +426,7 @@ async def panel_registry(request):
     models = [{"key": m["key"], "id": m["id"], "runner": m.get("runner", "opencode"),
                "provider": m.get("provider"), "usable": m["key"] in usable,
                "speed": speed.get(m["key"]) or None,
+               "benchmarks": (m.get("meta") or {}).get("display_benchmarks", "")[:140],
                "card": m["card"][:120]} for m in data["models"]]
     return JSONResponse({"default_model": data.get("default_model"),
                          "confidence_floor": data.get("confidence_floor"),

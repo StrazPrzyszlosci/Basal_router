@@ -116,6 +116,7 @@ def bench_line(benchmarks):
 def enrich():
     or_models = [m for m in fetch_or_models() if m.get("benchmarks")]
     dev = router.load_modelsdev()
+    in_prompt = router.load_settings().get("benchmarks_in_prompt", False)
     registry = router.load_registry()
     mapping = {}
     changed = 0
@@ -123,11 +124,12 @@ def enrich():
         entry = find_or_entry(or_models, candidates_for(m, dev))
         line = bench_line(entry.get("benchmarks") or {}) if entry else ""
         card = re.split(r"\s*Benchmarks \(", m["card"])[0].rstrip()
-        if line:
+        if line and in_prompt:
             card = f"{card} {line}"
         if card != m["card"]:
             changed += 1
         m["card"] = card
+        m.setdefault("meta", {})["display_benchmarks"] = line
         mapping[m["key"]] = {"or_id": entry["id"] if entry else None,
                              "benchmark_line": line,
                              "aa": entry.get("benchmarks", {}).get("artificial_analysis") if entry else None}
