@@ -1,396 +1,380 @@
 {
  "meta": {
-  "ts": "2026-10-20T22:40:42.745782",
+  "ts": "2026-10-22T00:12:37.834432",
   "host": "krzysiek-hpe820g3",
   "model": "basal-2.0-mini 1.5B Q8_0 (ollama)",
   "tasks": 15,
   "configs": {
-   "C5-english-cards": "models.json"
+   "C6-benchmark-cards": "models.json"
   }
  },
  "results": {
-  "C5-english-cards": {
+  "C6-benchmark-cards": {
    "n": 15,
-   "request_errors": 0,
-   "top1_accuracy": 0.6,
-   "mean_conf_correct": 0.686,
-   "mean_conf_wrong": 0.412,
-   "median_latency_ms": 81881,
-   "p90_latency_ms": 96397,
+   "request_errors": 1,
+   "top1_accuracy": 0.357,
+   "mean_conf_correct": 0.914,
+   "mean_conf_wrong": 0.473,
+   "median_latency_ms": 189537,
+   "p90_latency_ms": 265122,
    "floors": {
     "0.3": {
-     "automated": 13,
-     "automation_rate": 0.867,
-     "errors_among_automated": 4,
-     "error_rate_among_automated": 0.308
+     "automated": 12,
+     "automation_rate": 0.857,
+     "errors_among_automated": 7,
+     "error_rate_among_automated": 0.583
     },
     "0.45": {
-     "automated": 7,
-     "automation_rate": 0.467,
-     "errors_among_automated": 1,
-     "error_rate_among_automated": 0.143
+     "automated": 9,
+     "automation_rate": 0.643,
+     "errors_among_automated": 4,
+     "error_rate_among_automated": 0.444
     },
     "0.55": {
-     "automated": 6,
-     "automation_rate": 0.4,
-     "errors_among_automated": 1,
-     "error_rate_among_automated": 0.167
+     "automated": 7,
+     "automation_rate": 0.5,
+     "errors_among_automated": 2,
+     "error_rate_among_automated": 0.286
     },
     "0.7": {
-     "automated": 6,
-     "automation_rate": 0.4,
+     "automated": 5,
+     "automation_rate": 0.357,
      "errors_among_automated": 1,
-     "error_rate_among_automated": 0.167
+     "error_rate_among_automated": 0.2
     }
    }
   }
  },
  "rows": {
-  "C5-english-cards": [
+  "C6-benchmark-cards": [
    {
     "id": "t01",
     "profile": "code",
     "gold": "deepseek-flash",
-    "chosen": "deepseek-flash",
-    "confidence": 0.338458776473999,
-    "top3": [
-     [
-      "deepseek-flash",
-      0.3385
-     ],
-     [
-      "glm-flash",
-      0.1965
-     ],
-     [
-      "or-free",
-      0.1133
-     ]
-    ],
-    "latency_ms": 65790.81,
-    "wall_s": 65.9
+    "error": "timed out",
+    "wall_s": 300.3
    },
    {
     "id": "t02",
     "profile": "code",
     "gold": "deepseek-flash",
-    "chosen": "deepseek-flash",
-    "confidence": 0.5278700590133667,
+    "chosen": "or-free",
+    "confidence": 0.4423688054084778,
     "top3": [
      [
-      "deepseek-flash",
-      0.5279
+      "or-free",
+      0.4424
      ],
      [
-      "or-free",
-      0.2313
+      "deepseek-flash",
+      0.2124
      ],
      [
       "nemotron-lightning",
-      0.0489
+      0.08
      ]
     ],
-    "latency_ms": 81990.9,
-    "wall_s": 82.0
+    "latency_ms": 270550.66,
+    "wall_s": 270.9
    },
    {
     "id": "t03",
     "profile": "vision",
     "gold": "nemotron-vl",
     "chosen": "nemotron-vl",
-    "confidence": 0.872107982635498,
+    "confidence": 0.9478673338890076,
     "top3": [
      [
       "nemotron-vl",
-      0.8721
+      0.9479
      ],
      [
       "mimo-flash",
-      0.0384
+      0.013
      ],
      [
-      "nemotron-ultra",
-      0.0131
+      "xingchen-agi-xing4-0-29b-a4b-fre",
+      0.0085
      ]
     ],
-    "latency_ms": 72299.96,
-    "wall_s": 72.3
+    "latency_ms": 268182.13,
+    "wall_s": 268.3
    },
    {
     "id": "t04",
     "profile": "vision",
     "gold": "nemotron-vl",
     "chosen": "nemotron-vl",
-    "confidence": 0.9364420771598816,
+    "confidence": 0.9944577217102051,
     "top3": [
      [
       "nemotron-vl",
-      0.9364
+      0.9945
      ],
      [
-      "mimo-flash",
-      0.011
+      "thinkingmachines-inkling-free",
+      0.0008
      ],
      [
       "nemotron-ultra",
-      0.007
+      0.0007
      ]
     ],
-    "latency_ms": 65807.32,
-    "wall_s": 65.8
+    "latency_ms": 194149.57,
+    "wall_s": 194.2
    },
    {
     "id": "t05",
     "profile": "simple",
     "gold": "mimo-flash",
-    "chosen": "mimo-flash",
-    "confidence": 0.4387775957584381,
+    "chosen": "or-free",
+    "confidence": 0.5945367217063904,
     "top3": [
      [
-      "mimo-flash",
-      0.4388
+      "or-free",
+      0.5945
      ],
      [
-      "or-free",
-      0.2565
+      "mimo-flash",
+      0.1673
      ],
      [
       "nim-glm-flash",
-      0.0957
+      0.0796
      ]
     ],
-    "latency_ms": 62896.46,
-    "wall_s": 62.9
+    "latency_ms": 184925.07,
+    "wall_s": 185.0
    },
    {
     "id": "t06",
     "profile": "simple",
     "gold": "minimax-flash",
-    "chosen": "mimo-flash",
-    "confidence": 0.33442914485931396,
+    "chosen": "or-free",
+    "confidence": 0.38014546036720276,
     "top3": [
      [
-      "mimo-flash",
-      0.3344
-     ],
-     [
       "or-free",
-      0.2543
+      0.3801
      ],
      [
-      "nim-glm-flash",
-      0.1397
+      "mimo-flash",
+      0.229
+     ],
+     [
+      "big-pickle",
+      0.0817
      ]
     ],
-    "latency_ms": 117944.44,
-    "wall_s": 118.0
+    "latency_ms": 184417.75,
+    "wall_s": 184.5
    },
    {
     "id": "t07",
     "profile": "research",
     "gold": "nemotron-ultra",
-    "chosen": "nim-nemotron-70b",
-    "confidence": 0.22239741683006287,
+    "chosen": "xingchen-agi-xing4-0-29b-a4b-fre",
+    "confidence": 0.14925219118595123,
     "top3": [
      [
+      "xingchen-agi-xing4-0-29b-a4b-fre",
+      0.1493
+     ],
+     [
+      "nvidia-nemotron-3-nano-omni-30b-",
+      0.1103
+     ],
+     [
       "nim-nemotron-70b",
-      0.2224
-     ],
-     [
-      "mimo-flash",
-      0.1217
-     ],
-     [
-      "qwen-local",
-      0.113
+      0.0927
      ]
     ],
-    "latency_ms": 111941.14,
-    "wall_s": 112.0
+    "latency_ms": 196745.75,
+    "wall_s": 196.8
    },
    {
     "id": "t08",
     "profile": "reasoning",
     "gold": "nemotron-ultra",
     "chosen": "nim-nemotron-70b",
-    "confidence": 0.28831806778907776,
+    "confidence": 0.24566632509231567,
     "top3": [
      [
       "nim-nemotron-70b",
-      0.2883
-     ],
-     [
-      "nemotron-lightning",
-      0.156
+      0.2457
      ],
      [
       "mimo-flash",
-      0.1227
+      0.1538
+     ],
+     [
+      "nvidia-nemotron-3-nano-omni-30b-",
+      0.1066
      ]
     ],
-    "latency_ms": 82211.07,
-    "wall_s": 82.3
+    "latency_ms": 158113.5,
+    "wall_s": 158.2
    },
    {
     "id": "t09",
     "profile": "long-context",
     "gold": "longcat",
     "chosen": "longcat",
-    "confidence": 0.8692145347595215,
+    "confidence": 0.9800229072570801,
     "top3": [
      [
       "longcat",
-      0.8692
+      0.98
      ],
      [
-      "or-free",
-      0.0169
+      "qwen-local",
+      0.0039
      ],
      [
-      "nim-nemotron-70b",
-      0.0162
+      "nvidia-nemotron-3-nano-omni-30b-",
+      0.0019
      ]
     ],
-    "latency_ms": 76021.51,
-    "wall_s": 76.1
+    "latency_ms": 160154.81,
+    "wall_s": 160.2
    },
    {
     "id": "t10",
     "profile": "creative",
     "gold": "glm-flash",
     "chosen": "or-free",
-    "confidence": 0.8953849077224731,
+    "confidence": 0.9373431205749512,
     "top3": [
      [
       "or-free",
-      0.8954
+      0.9373
      ],
      [
       "big-pickle",
-      0.0256
+      0.0169
      ],
      [
-      "nim-nemotron-70b",
-      0.0183
+      "nim-glm-flash",
+      0.0113
      ]
     ],
-    "latency_ms": 96396.6,
-    "wall_s": 96.5
+    "latency_ms": 265121.76,
+    "wall_s": 265.2
    },
    {
     "id": "t11",
     "profile": "code",
     "gold": "deepseek-flash",
     "chosen": "deepseek-flash",
-    "confidence": 0.8504683971405029,
+    "confidence": 0.6583106517791748,
     "top3": [
      [
       "deepseek-flash",
-      0.8505
+      0.6583
      ],
      [
       "or-free",
-      0.05
+      0.155
      ],
      [
       "big-pickle",
-      0.0325
+      0.0585
      ]
     ],
-    "latency_ms": 88534.75,
-    "wall_s": 88.7
+    "latency_ms": 221971.68,
+    "wall_s": 222.0
    },
    {
     "id": "t12",
     "profile": "agent",
     "gold": "glm-flash",
-    "chosen": "or-free",
-    "confidence": 0.32116180658340454,
+    "chosen": "big-pickle",
+    "confidence": 0.5311270356178284,
     "top3": [
      [
-      "or-free",
-      0.3212
-     ],
-     [
       "big-pickle",
-      0.2594
+      0.5311
      ],
      [
-      "nim-nemotron-70b",
-      0.1102
+      "or-free",
+      0.2927
+     ],
+     [
+      "nvidia-nemotron-3-nano-omni-30b-",
+      0.0357
      ]
     ],
-    "latency_ms": 76916.44,
-    "wall_s": 77.0
+    "latency_ms": 166131.89,
+    "wall_s": 166.2
    },
    {
     "id": "t13",
     "profile": "math",
     "gold": "nemotron-ultra",
     "chosen": "or-free",
-    "confidence": 0.4082641303539276,
+    "confidence": 0.5424352884292603,
     "top3": [
      [
       "or-free",
-      0.4083
+      0.5424
      ],
      [
-      "nim-nemotron-70b",
-      0.1378
+      "big-pickle",
+      0.0734
      ],
      [
       "mimo-flash",
-      0.0885
+      0.0676
      ]
     ],
-    "latency_ms": 81880.77,
-    "wall_s": 81.9
+    "latency_ms": 177587.55,
+    "wall_s": 177.7
    },
    {
     "id": "t14",
     "profile": "simple",
     "gold": "mimo-flash",
-    "chosen": "mimo-flash",
-    "confidence": 0.4005312919616699,
+    "chosen": "or-free",
+    "confidence": 0.43641215562820435,
     "top3": [
      [
-      "mimo-flash",
-      0.4005
-     ],
-     [
       "or-free",
-      0.2054
+      0.4364
      ],
      [
       "big-pickle",
-      0.1028
+      0.2206
+     ],
+     [
+      "mimo-flash",
+      0.1324
      ]
     ],
-    "latency_ms": 72452.52,
-    "wall_s": 72.5
+    "latency_ms": 170704.34,
+    "wall_s": 170.8
    },
    {
     "id": "t15",
     "profile": "vision",
     "gold": "nemotron-vl",
     "chosen": "nemotron-vl",
-    "confidence": 0.9441791772842407,
+    "confidence": 0.9911016225814819,
     "top3": [
      [
       "nemotron-vl",
-      0.9442
+      0.9911
      ],
      [
-      "mimo-flash",
-      0.0084
+      "thinkingmachines-inkling-free",
+      0.0016
      ],
      [
-      "or-free",
-      0.0057
+      "nemotron-ultra",
+      0.001
      ]
     ],
-    "latency_ms": 85273.67,
-    "wall_s": 85.3
+    "latency_ms": 202593.74,
+    "wall_s": 202.7
    }
   ]
  }
