@@ -1,0 +1,17 @@
+{
+  "ts": "2026-10-21T03:44:21",
+  "sources": {
+    "opencode": 456,
+    "openrouter_free": 20,
+    "keyed_provider_models": 0,
+    "modelsdev_providers": 232
+  },
+  "reachable": 30,
+  "candidates": 19,
+  "vanished": [],
+  "proposal": {
+    "add": [],
+    "drop": [],
+    "reason": ""
+  }
+}

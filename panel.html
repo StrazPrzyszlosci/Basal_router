@@ -48,6 +48,7 @@ request — no restart. The registry holds max 20 options (an ollama-mode limit)
   <label class="opt"><input type="checkbox" id="s-footer" checked> answer footer (which model + why)</label>
   <label class="opt"><input type="checkbox" id="s-log" checked> log decisions</label>
   <label class="opt"><input type="checkbox" id="s-fallback" checked> automatic fallback</label>
+  <label class="opt"><input type="checkbox" id="s-autorefresh" checked> auto-refresh models</label>
 </div>
 <div class="row" style="margin-top:10px">
   <label class="opt">default model <select id="s-default" style="max-width:220px"></select></label>
@@ -66,6 +67,12 @@ request — no restart. The registry holds max 20 options (an ollama-mode limit)
 <h2>model registry</h2>
 <div class="meta" id="registry-meta">loading…</div>
 <div id="registry-table"></div>
+</div>
+
+<div class="card">
+<h2>model discovery</h2>
+<div class="meta" id="discovery-meta">The registry self-updates from models.dev, the live opencode list and the OpenRouter free catalog; cards for new models are written by a free model. Cron refreshes every 6 hours.</div>
+<div class="row"><button class="ghost" onclick="refreshDiscovery()">Refresh now</button><span class="status" id="discovery-status"></span></div>
 </div>
 
 <div class="card">
@@ -191,6 +198,7 @@ async function loadSettings() {
   document.getElementById("s-footer").checked = !!s.answer_footer;
   document.getElementById("s-log").checked = !!s.log_decisions;
   document.getElementById("s-fallback").checked = !!s.fallback_enabled;
+  document.getElementById("s-autorefresh").checked = !!s.model_autorefresh;
   document.getElementById("s-floor").value = s.confidence_floor ?? "";
   document.getElementById("s-timeout").value = s.exec_timeout_s ?? "";
   document.getElementById("s-lang").value = s.state_lang || "pl";
@@ -206,6 +214,7 @@ async function saveSettings() {
     const body = {answer_footer: document.getElementById("s-footer").checked,
                   log_decisions: document.getElementById("s-log").checked,
                   fallback_enabled: document.getElementById("s-fallback").checked,
+                  model_autorefresh: document.getElementById("s-autorefresh").checked,
                   state_lang: document.getElementById("s-lang").value,
                   default_model: document.getElementById("s-default").value,
                   routing_instructions: document.getElementById("s-instructions").value};
@@ -228,9 +237,31 @@ async function addProvider() {
     await refresh();
   } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
 }
+async function loadDiscovery() {
+  try {
+    const d = await (await fetch("/panel/api/discovery")).json();
+    if (d.never) {
+      document.getElementById("discovery-meta").textContent = "No scan yet — cron runs every 6 hours, or press Refresh now.";
+      return;
+    }
+    document.getElementById("discovery-meta").textContent =
+      `Last scan ${d.ts}: ${d.candidates} new candidates, ${(d.vanished || []).length} vanished; ` +
+      `proposal +${(d.proposal.add || []).length} / -${(d.proposal.drop || []).length}` +
+      (d.applied ? ` — applied +${d.applied.added.length} / -${d.applied.dropped.length}` : " — not applied");
+  } catch (e) {}
+}
+async function refreshDiscovery() {
+  const st = document.getElementById("discovery-status");
+  try {
+    const r = await fetch("/panel/api/discovery/refresh", {method: "POST", headers: {"x-panel": "1", "content-type": "application/json"}, body: "{}"});
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    st.innerHTML = '<span class="ok">started — runs in the background (several minutes on this CPU)</span>';
+  } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
+}
 refresh();
 loadSettings();
 loadRegistry();
+loadDiscovery();
 </script>
 </body>
 </html>

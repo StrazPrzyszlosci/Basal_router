@@ -9,6 +9,8 @@ a specific model. GET /panel serves the provider-key management UI.
 import json
 import os
 import re
+import subprocess
+import sys
 import time
 import uuid
 from pathlib import Path
@@ -105,6 +107,7 @@ async def panel_get_settings(request):
         "exec_timeout_s": settings.get("exec_timeout_s", 600),
         "state_lang": settings.get("state_lang", "pl"),
         "routing_instructions": settings.get("routing_instructions", ""),
+        "model_autorefresh": settings.get("model_autorefresh", True),
     }})
 
 
@@ -146,6 +149,8 @@ async def panel_save_settings(request):
         if key and key not in {m["key"] for m in router.load_registry()["models"]}:
             return JSONResponse({"error": f"unknown model key: {key}"}, status_code=400)
         current["default_model"] = key or None
+    if "model_autorefresh" in body:
+        current["model_autorefresh"] = bool(body["model_autorefresh"])
     save_settings_file(current)
     return await panel_get_settings(request)
 
@@ -448,6 +453,27 @@ async def panel_registry_remove(request):
     return JSONResponse({"removed": key, "count": len(data["models"])})
 
 
+async def panel_discovery_status(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    path = Path(__file__).resolve().parent / "opt" / "discovery" / "last_scan.json"
+    if not path.exists():
+        return JSONResponse({"never": True})
+    return JSONResponse(json.loads(path.read_text(encoding="utf-8")))
+
+
+async def panel_discovery_refresh(request):
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    script = Path(__file__).resolve().parent / "opt" / "discovery.py"
+    log = script.parent / "discovery" / "refresh.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    with log.open("a") as handle:
+        subprocess.Popen([sys.executable, str(script), "refresh"],
+                          stdout=handle, stderr=subprocess.STDOUT, start_new_session=True)
+    return JSONResponse({"started": True})
+
+
 async def root(request):
     return RedirectResponse("/panel")
 
@@ -468,6 +494,8 @@ app = Starlette(routes=[
     Route("/panel/api/registry", panel_registry),
     Route("/panel/api/registry/import", panel_registry_import, methods=["POST"]),
     Route("/panel/api/registry/remove", panel_registry_remove, methods=["POST"]),
+    Route("/panel/api/discovery", panel_discovery_status),
+    Route("/panel/api/discovery/refresh", panel_discovery_refresh, methods=["POST"]),
     Route("/panel/api/providers/{name}/test", panel_test_provider, methods=["POST"]),
 ])
 

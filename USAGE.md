@@ -184,7 +184,27 @@ more than 0.05; `--revert <cycle>` undoes any change manually.
 ~/basal-env/bin/python opt/abstral_loop.py --revert 2
 ```
 
-## 7. OpenEvolve (scaffold, run when you have a fast LLM)
+## 7. Model discovery — the self-updating registry (opt/discovery.py)
+
+Sources: models.dev (the master catalog; free = zero cost), the live `opencode models` list, the
+OpenRouter free catalog and the catalogs of providers with a saved key. Which candidates to add (and
+which vanished entries to drop) is decided by a free model through routerd, and it also writes the
+role-oriented English cards for the new models. Guardrails: cap 20 options, the default model is never
+dropped, existing cards are never rewritten, every change is journaled in
+`opt/discovery/change_log.json` (`revert <n>` restores it), and the settings toggle
+`auto-refresh models` switches between scan-only and apply.
+
+```bash
+~/basal-env/bin/python opt/discovery.py scan       # sources -> proposal, no changes applied
+~/basal-env/bin/python opt/discovery.py refresh    # scan + apply (cron runs this)
+~/basal-env/bin/python opt/discovery.py status
+~/basal-env/bin/python opt/discovery.py revert 1
+```
+
+A crontab entry refreshes the registry every 6 hours (check `crontab -l`); the panel has a
+"model discovery" card with the last scan summary and a Refresh-now button.
+
+## 8. OpenEvolve (scaffold, run when you have a fast LLM)
 
 `opt/openevolve_router.py` holds the evaluator (routing accuracy on the first 6 benchmark tasks) and
 the current cards as the genome. A meaningful evolution is LLM-call-bound — days over free
@@ -197,7 +217,7 @@ openevolve-run opt/openevolve_initial_program.py opt/openevolve_evaluator.py --c
 ~/basal-env/bin/python opt/openevolve_router.py --baseline
 ```
 
-## 8. Hardware notes (i3-10110U, 16 GB, heavy swap)
+## 9. Hardware notes (i3-10110U, 16 GB, heavy swap)
 
 - one decision: 30-70 s depending on swap pressure; `basal-serve` start: ~8 s (warm cache)
 - keep `free -h` in mind: below ~3 GB available, processes get OOM-killed (the harness resumes)

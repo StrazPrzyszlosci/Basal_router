@@ -23,6 +23,7 @@ experiments/results/progress_*
 opt/gepa_result/gepa_state.bin
 opt/gepa_result/live.log
 opt/abstral/cycle.log
+opt/discovery/refresh.log
 opt/gepa_result/generated_best_outputs_valset/
 
 # os / editor junk
