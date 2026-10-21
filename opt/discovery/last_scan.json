@@ -1,5 +1,5 @@
 {
-  "ts": "2026-10-21T03:44:21",
+  "ts": "2026-10-21T06:19:31",
   "sources": {
     "opencode": 456,
     "openrouter_free": 20,
@@ -12,6 +12,12 @@
   "proposal": {
     "add": [],
     "drop": [],
-    "reason": ""
+    "reason": "Fills the missing creative-writing niche with frontier-scale Inkling plus a lighter conversational writer (Xing4.0) and a note/drafting helper (Dots3-Note), adds the registry's only free guardrail (Nemotron 3.5 Content Safety) and omni audio/vision perception beyond the image-only VL slot, and drops nothing since no entries vanished."
+  },
+  "applied": {
+    "added": [],
+    "dropped": [],
+    "reason": "Fills the missing creative-writing niche with frontier-scale Inkling plus a lighter conversational writer (Xing4.0) and a note/drafting helper (Dots3-Note), adds the registry's only free guardrail (Nemotron 3.5 Content Safety) and omni audio/vision perception beyond the image-only VL slot, and drops nothing since no entries vanished.",
+    "registry_size": 15
   }
 }

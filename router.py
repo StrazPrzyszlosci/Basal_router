@@ -174,9 +174,9 @@ def load_providers():
     return {}
 
 
-def resolve_hermes_model(requested=None):
-    """Model the sandbox agent works on: explicit request > the panel setting > auto (basal routes per task)."""
-    return requested or load_settings().get("hermes_model") or "auto"
+def hermes_general_enabled():
+    """Hermes is reserved for model-registry updates; every other use needs this explicit toggle."""
+    return bool(load_settings().get("hermes_enabled", False))
 
 
 def execute_hermes(model_key, task, timeout_s=600):
@@ -202,17 +202,25 @@ def execute_hermes(model_key, task, timeout_s=600):
     raise RuntimeError(f"hermes sandbox returned no output: {proc.stderr[-500:] or '(no stderr)'}")
 
 
-def execute(model_key, task, timeout_s=600, runner=None):
+def resolve_hermes_model(requested=None):
+    """Model the sandbox agent works on: explicit request > the panel setting > auto (basal routes per task)."""
+    return requested or load_settings().get("hermes_model") or "auto"
+
+
+def execute(model_key, task, timeout_s=600, runner=None, workdir=None):
     entry = next((m for m in load_registry()["models"] if m["key"] == model_key), None)
     if entry is None:
         raise RuntimeError(f"unknown model: {model_key}")
     runner = runner or entry.get("runner", "opencode")
     if runner == "hermes":
-        return execute_hermes(model_key, task, timeout_s)
+        if not hermes_general_enabled():
+            raise RuntimeError("Hermes is reserved for model-registry updates. Enable 'Hermes agent "
+                               "(general use)' in the panel settings to run other tasks with it.")
+        return execute_hermes(model_key or resolve_hermes_model(), task, timeout_s)
     if runner == "opencode":
         proc = subprocess.run(
             [OPENCODE, "run", "-m", entry["id"], task],
-            capture_output=True, text=True, timeout=timeout_s,
+            capture_output=True, text=True, timeout=timeout_s, cwd=workdir,
         )
         if proc.stdout.strip():
             return proc.stdout[-20000:]
@@ -266,6 +274,9 @@ def main():
             mark = "" if model["key"] in usable else "   [needs a key — inactive]"
             print(f"{model['key']:20} {model['id']}{mark}")
     elif command == "hermes":
+        if not hermes_general_enabled():
+            raise SystemExit("Hermes is reserved for model-registry updates. Enable 'Hermes agent "
+                              "(general use)' in the panel settings to run other tasks with it.")
         rest = sys.argv[2:]
         keys = {m["key"] for m in load_registry()["models"]}
         requested = rest[0] if rest and (rest[0] in keys or rest[0] == "auto") else None

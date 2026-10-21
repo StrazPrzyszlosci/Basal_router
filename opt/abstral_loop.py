@@ -71,11 +71,14 @@ def save_changelog(log):
     CHANGELOG_PATH.write_text(json.dumps(log, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def run_pipeline(task, topo):
-    """route -> run -> verify (-> escalate) under the current topology; returns a trace."""
+def run_pipeline(task, topo, cycle_no):
+    """route -> run -> verify (-> escalate) under the current topology. Executions run in a scratch
+    directory, so synthetic benchmark tasks can never write into the project."""
+    scratch = DIR / "scratch" / f"cycle{cycle_no}-{task['id']}"
+    scratch.mkdir(parents=True, exist_ok=True)
     trace = {"model_calls": 1, "escalated": False}
     decision = router.route(task["task"])
-    answer = router.execute(decision["model"], task["task"], runner="hermes")
+    answer = router.execute(decision["model"], task["task"], workdir=str(scratch))
     trace.update({"chosen": decision["chosen_by_basal"], "confidence": round(decision["confidence"], 3),
                   "deferred": decision["deferred"]})
     verified = None
@@ -91,7 +94,7 @@ def run_pipeline(task, topo):
         trace["verify_p"] = round(p_ok, 3)
     if verified is False and topo.get("max_attempts", 2) > 1:
         answer = router.execute(topo.get("escalation_model", "nemotron-ultra"), task["task"],
-                                 runner="hermes")
+                                 workdir=str(scratch))
         trace["model_calls"] += 1
         trace["escalated"] = True
         verified = True
@@ -212,7 +215,7 @@ def cycle(n_tasks):
     traces = []
     for task in bench:
         try:
-            trace = run_pipeline(task, arch["topology"])
+            trace = run_pipeline(task, arch["topology"], cycle_no)
         except Exception as exc:
             trace = {"chosen": f"error: {str(exc)[:120]}", "confidence": 0, "deferred": False,
                      "verified": None, "model_calls": 0, "escalated": False}

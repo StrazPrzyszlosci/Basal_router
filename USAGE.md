@@ -184,24 +184,23 @@ more than 0.05; `--revert <cycle>` undoes any change manually.
 ~/basal-env/bin/python opt/abstral_loop.py --revert 2
 ```
 
-## 6b. Hermes sandbox — the execution agent (opt/hermes_sandbox/)
+## 6b. Hermes sandbox — the registry-update agent (opt/hermes_sandbox/)
 
-Experimental pipelines (ABSTRAL, the LangGraph graph) never run the user's opencode installation as an
-agent. Instead they run the **isolated Hermes sandbox**: its own `HERMES_HOME` (no access to your Hermes
-installation, sessions or credentials), `--ignore-user-config --ignore-rules --safe-mode`, a fresh
-scratch working directory per task, hard limits (`agent.max_turns: 4`, `agent.run_budget_seconds: 600`)
-and a switchable model through routerd:
+The sandboxed Hermes agent (its own `HERMES_HOME` — no access to your Hermes installation, sessions or
+credentials; `--ignore-user-config --ignore-rules --safe-mode`; a fresh scratch directory; hard limits
+`agent.max_turns: 4`, `agent.run_budget_seconds: 600`) has exactly **one automatic job in this repo:
+updating the model registry**. During a registry update (cron every 6 h, or the "Update model registry
+now" button in the settings card) it fetches provider catalogs, selects which new free models to add and
+writes their role cards — the selection and card-writing reasoning run through this agent.
 
-- **auto** (default) — basal routes the model for every task the agent works on
-- any registry key — the agent works on that one model (`router/<key>`, no re-routing recursion)
-- the **panel settings** ("hermes agent model") set the default; the CLI overrides per run
+Every other use is **disabled by default**: the `router.py hermes [model] "task"` CLI and the "hermes"
+runner refuse to run until you enable **"Hermes agent (general use)"** in the panel settings (the setting
+carries a full description; leave it off — nothing depends on it). Experimental pipelines execute
+through the normal registry runners with a scratch working directory, so synthetic tasks never write
+into the project.
 
-```bash
-~/basal-env/bin/python router.py hermes "task"                    # auto / panel default
-~/basal-env/bin/python router.py hermes deepseek-flash "task"     # switch to one model
-```
-
-The opencode runner stays only for user-driven routing (Kilo/opencode clients through routerd).
+The agent's model is switchable: **auto** (basal routes per request) or any registry key — set in the
+panel ("hermes agent model") or per CLI run (`router.py hermes deepseek-flash "task"`, needs the toggle).
 
 ## 7. Model discovery — the self-updating registry (opt/discovery.py)
 

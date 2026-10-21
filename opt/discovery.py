@@ -40,11 +40,16 @@ KNOWN_FREE = {"opencode/big-pickle"}
 
 
 def llm(prompt):
-    response = httpx.post(ROUTERD,
-                          json={"model": "auto", "messages": [{"role": "user", "content": prompt}]},
-                          timeout=600)
-    response.raise_for_status()
-    text = response.json()["choices"][0]["message"]["content"].strip()
+    """Registry-update reasoning runs on the sandboxed Hermes agent — its one job in this repo.
+    A plain routerd call stays as the fallback if the agent is unavailable."""
+    try:
+        text = router.execute_hermes(router.load_settings().get("hermes_model") or "auto", prompt, 600)
+    except Exception:
+        response = httpx.post(ROUTERD,
+                              json={"model": "auto", "messages": [{"role": "user", "content": prompt}]},
+                              timeout=600)
+        response.raise_for_status()
+        text = response.json()["choices"][0]["message"]["content"].strip()
     marker = "\n---\n[router]"
     if marker in text:
         text = text.split(marker)[0].strip()
@@ -177,6 +182,7 @@ def scan():
 
     slots = REGISTRY_CAP - len(registry["models"])
     proposal = {"add": [], "drop": [], "reason": ""}
+    raw = ""
     if candidates or vanished:
         listing = "\n".join(f"- {mid} :: {(info.get('description') or '')[:140]}"
                             for mid, info in list(candidates.items())[:40])
@@ -192,9 +198,10 @@ def scan():
                   'Output STRICT JSON: {"add": [model ids], "drop": [registry keys], '
                   '"reason": "one sentence"}. No other text.')
         try:
-            proposal = parse_json(llm(prompt)) or proposal
+            raw = llm(prompt)
+            proposal = parse_json(raw) or proposal
         except Exception:
-            pass
+            raw = ""
     proposal["add"] = [mid for mid in proposal.get("add", []) if mid in candidates][:max(slots, 0)]
     default_key = registry.get("default_model")
     proposal["drop"] = [k for k in proposal.get("drop", []) if k in vanished and k != default_key]
@@ -205,7 +212,8 @@ def scan():
                           "keyed_provider_models": len(keyed),
                           "modelsdev_providers": len(dev)},
               "reachable": len(reachable), "candidates": len(candidates),
-              "vanished": vanished, "proposal": proposal}
+              "vanished": vanished, "proposal": proposal,
+              "raw_proposal": raw[:600]}
     DIR.mkdir(parents=True, exist_ok=True)
     LAST_SCAN.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     return result

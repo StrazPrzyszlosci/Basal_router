@@ -109,6 +109,7 @@ async def panel_get_settings(request):
         "routing_instructions": settings.get("routing_instructions", ""),
         "model_autorefresh": settings.get("model_autorefresh", True),
         "hermes_model": settings.get("hermes_model") or "auto",
+        "hermes_enabled": settings.get("hermes_enabled", False),
     }})
 
 
@@ -158,6 +159,8 @@ async def panel_save_settings(request):
                 m["key"] for m in router.load_registry()["models"]}:
             return JSONResponse({"error": f"unknown hermes model: {value}"}, status_code=400)
         current["hermes_model"] = "auto" if value in ("auto",) else value
+    if "hermes_enabled" in body:
+        current["hermes_enabled"] = bool(body["hermes_enabled"])
     save_settings_file(current)
     return await panel_get_settings(request)
 

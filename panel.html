@@ -49,6 +49,7 @@ request — no restart. The registry holds max 20 options (an ollama-mode limit)
   <label class="opt"><input type="checkbox" id="s-log" checked> log decisions</label>
   <label class="opt"><input type="checkbox" id="s-fallback" checked> automatic fallback</label>
   <label class="opt"><input type="checkbox" id="s-autorefresh" checked> auto-refresh models</label>
+  <label class="opt"><input type="checkbox" id="s-hermes-on"> Hermes agent (general use)</label>
 </div>
 <div class="row" style="margin-top:10px">
   <label class="opt">default model <select id="s-default" style="max-width:220px"></select></label>
@@ -57,6 +58,12 @@ request — no restart. The registry holds max 20 options (an ollama-mode limit)
   <label class="opt">exec timeout [s] <input type="number" id="s-timeout" step="30" min="30" max="3600" style="width:100px"></label>
   <label class="opt">state language <select id="s-lang"><option value="pl">pl</option><option value="en">en</option></select></label>
 </div>
+<div class="meta" style="margin-top:10px"><b>Hermes agent</b> (sandboxed — it never touches your Hermes
+installation): its ONLY automatic job is updating the model registry — every 6 h via cron, or the button
+below: it fetches provider catalogs, picks new free models and writes their role cards. The toggle above
+enables optional manual use (the `router.py hermes` CLI and the "hermes" runner); leave it OFF normally —
+everything else keeps working without it.</div>
+<div class="row"><button class="ghost" onclick="refreshDiscovery()">Update model registry now</button><span class="status" id="registry-update-status"></span></div>
 <div style="margin-top:10px">
   <div class="meta">routing instructions (blank = the built-in default; GEPA results can be pasted here)</div>
   <textarea id="s-instructions" placeholder="Choose the model that best handles the task..."></textarea>
@@ -203,6 +210,7 @@ async function loadSettings() {
   document.getElementById("s-log").checked = !!s.log_decisions;
   document.getElementById("s-fallback").checked = !!s.fallback_enabled;
   document.getElementById("s-autorefresh").checked = !!s.model_autorefresh;
+  document.getElementById("s-hermes-on").checked = !!s.hermes_enabled;
   document.getElementById("s-floor").value = s.confidence_floor ?? "";
   document.getElementById("s-timeout").value = s.exec_timeout_s ?? "";
   document.getElementById("s-lang").value = s.state_lang || "pl";
@@ -221,6 +229,7 @@ async function saveSettings() {
                   log_decisions: document.getElementById("s-log").checked,
                   fallback_enabled: document.getElementById("s-fallback").checked,
                   model_autorefresh: document.getElementById("s-autorefresh").checked,
+                  hermes_enabled: document.getElementById("s-hermes-on").checked,
                   state_lang: document.getElementById("s-lang").value,
                   default_model: document.getElementById("s-default").value,
                   hermes_model: document.getElementById("s-hermes").value,
