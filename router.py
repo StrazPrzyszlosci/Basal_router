@@ -21,8 +21,8 @@ LOG_PATH = DIR / "decisions.jsonl"
 BASAL_URL = os.environ.get("BASAL_URL", "http://127.0.0.1:8000")
 PROVIDERS_PATH = DIR / "providers.json"
 SETTINGS_PATH = DIR / "settings.json"
-OPENCODE = "/home/krzysiek/.opencode/bin/opencode"
-HERMES = "/home/krzysiek/.local/bin/hermes"
+OPENCODE = os.environ.get("OPENCODE_BIN", "/home/krzysiek/.opencode/bin/opencode")
+HERMES = os.environ.get("HERMES_BIN", "/home/krzysiek/.local/bin/hermes")
 HERMES_SANDBOX = DIR / "opt" / "hermes_sandbox" / "home"
 NO_MODELS_HINT = ("No model could be executed. opencode free models require an active opencode session "
                   "(check `opencode auth list`); provider-key models (nim-*) need a key saved at "
@@ -51,14 +51,19 @@ def load_settings():
 
 
 def usable_models(data=None):
-    """Registry entries executable right now: opencode models always, direct models only with a saved key."""
+    """Registry entries executable right now: opencode models always, direct models only with a
+    saved key — minus models whose last calls all failed recently (availability cooldown)."""
     data = data or load_registry()
+    settings = load_settings()
+    skip_failing = settings.get("skip_recently_failing", True)
     providers = load_providers()
     usable = []
     for m in data["models"]:
         if m.get("runner", "opencode") == "direct":
             if not (providers.get(m.get("provider")) or {}).get("apiKey"):
                 continue
+        if skip_failing and performance is not None and performance.recently_failing(m["key"]):
+            continue
         usable.append(m)
     return usable
 

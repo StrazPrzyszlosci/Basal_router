@@ -68,6 +68,31 @@ def stats():
     return out
 
 
+def recently_failing(key, min_failures=3, window_hours=1):
+    """True when the last `min_failures` recorded calls all failed and the newest one is fresh —
+    the model is treated as unavailable (quota exhausted, provider down) and skipped by routing."""
+    if not METRICS.exists():
+        return False
+    rows = []
+    for line in METRICS.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except Exception:
+            continue
+        if row.get("model") == key:
+            rows.append(row)
+    rows = rows[-min_failures:]
+    if len(rows) < min_failures or any(r.get("ok") for r in rows):
+        return False
+    try:
+        last = time.mktime(time.strptime(rows[-1]["ts"], "%Y-%m-%dT%H:%M:%S"))
+    except Exception:
+        return False
+    return (time.time() - last) < window_hours * 3600
+
+
 def speed_line(key):
     s = stats().get(key)
     if not s or s["n"] < MIN_SAMPLES:

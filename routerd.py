@@ -121,6 +121,7 @@ async def panel_get_settings(request):
         "hermes_model": settings.get("hermes_model") or "auto",
         "hermes_enabled": settings.get("hermes_enabled", False),
         "measure_performance": settings.get("measure_performance", True),
+        "skip_recently_failing": settings.get("skip_recently_failing", True),
     }})
 
 
@@ -174,6 +175,8 @@ async def panel_save_settings(request):
         current["hermes_enabled"] = bool(body["hermes_enabled"])
     if "measure_performance" in body:
         current["measure_performance"] = bool(body["measure_performance"])
+    if "skip_recently_failing" in body:
+        current["skip_recently_failing"] = bool(body["skip_recently_failing"])
     save_settings_file(current)
     return await panel_get_settings(request)
 
