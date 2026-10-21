@@ -60,23 +60,39 @@ curl -s localhost:8788/v1/chat/completions -H 'content-type: application/json' \
 ~/basal-env/bin/python router.py annotate          # label decisions.jsonl with gold
 ```
 
-### Provider keys (panel)
+### Providers (panel)
 
-Open http://127.0.0.1:8788/panel — paste a key, `Save` (chmod 600 `providers.json`, masked in the API),
-`Test` sends a one-token request to the provider's probe model. Add any OpenAI-compatible provider
+Open http://127.0.0.1:8788/ — the panel loads automatically (the root redirects to `/panel`).
+Per provider: paste a key, `Save` (chmod 600 `providers.json`, masked in the API), `Test` (a one-token
+request to the probe model), `Models` (fetches the provider's `{baseURL}/models` catalog — needs a saved
+key) and `Import` adds a picked catalog model to the registry as a `direct`-runner entry with an
+auto-built card (real data from models.dev when available, a minimal template otherwise). `Delete`
+removes a provider — blocked while registry models still use it. Add any OpenAI-compatible provider
 from the form. NIM example: provider `nvidia`, probe `z-ai/glm-5.3-flash`. Until a key is saved, the
-`nim-*` registry models stay inactive and the router falls back to opencode models.
+provider's registry models stay inactive.
 
 ### Settings (panel)
 
-The settings card on the same page controls:
+The settings card controls (all live from the next request — no restart; `settings.json`, chmod 600,
+gitignored):
 - **answer footer** (default on) — every routed answer ends with
   `--- [router] answered by <model> (confidence X). Why: ... Alternatives considered: ...`
 - **log decisions** — append every decision to `decisions.jsonl` (your calibration dataset)
+- **automatic fallback** (default on) — on execution failure try the next models from basal's
+  ranking (up to 2)
 - **confidence floor** — below this confidence the router defers to the default model
-  (empty = the `models.json` value, currently 0.55)
+  (empty = the `models.json` value, 0.55)
+- **default model** — the defer target (empty = the `models.json` value)
+- **exec timeout** — per-execution timeout, 30..3600 s (default 600)
+- **state language** — `pl` or `en`; the routing prompt language
+- **routing instructions** — blank = the built-in default; paste GEPA-evolved instructions here
 
-Settings live in `settings.json` (chmod 600, gitignored) and apply from the next request — no restart.
+### Model registry (panel)
+
+The registry card lists every model with its runner and usability (models whose provider has no saved
+key are inactive), lets you remove models (blocked for the default model) and shows the 20-option cap
+(an ollama-mode limit). Imported models can be removed freely; the shipped free models can be restored
+from git history.
 
 ### Keyless operation
 

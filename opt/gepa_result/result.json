@@ -36,9 +36,9 @@
     "card:nim-deepseek-flash": "Fast coding via your own NIM key: when the free opencode endpoint runs out.",
     "card:qwen-local": "Runs offline on the laptop, fully private. Short 8k context, slow on this machine. Note: must be pulled into Ollama first."
   },
-  "tasks": 1,
-  "max_metric_calls": 2,
-  "seconds": 53.1,
+  "tasks": 6,
+  "max_metric_calls": 18,
+  "seconds": 261.1,
   "meta": {
     "model": "basal-2.0-mini 1.5B Q8_0",
     "reflection_lm": "routerd (auto)"

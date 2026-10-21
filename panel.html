@@ -2,70 +2,98 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Basal Router — provider keys</title>
+<title>Basal Router — control panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root { color-scheme: dark; }
 body { font: 15px/1.45 system-ui, sans-serif; background: #0f1115; color: #d7dae0; margin: 0; padding: 32px; }
-main { max-width: 760px; margin: 0 auto; }
+main { max-width: 860px; margin: 0 auto; }
 h1 { font-size: 20px; margin: 0 0 4px; }
+h2 { font-size: 15px; margin: 0 0 2px; text-transform: lowercase; }
 p.sub { color: #8a909c; margin: 0 0 24px; font-size: 13px; }
 .card { background: #171a21; border: 1px solid #262b36; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
-.card h2 { font-size: 15px; margin: 0 0 2px; text-transform: lowercase; }
-.card .url { color: #8a909c; font-size: 12px; margin-bottom: 10px; word-break: break-all; }
+.url, .meta { color: #8a909c; font-size: 12px; margin-bottom: 10px; word-break: break-all; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-input { background: #0f1115; border: 1px solid #2c3240; color: #d7dae0; border-radius: 7px; padding: 8px 10px; font-size: 13px; }
-input.key { flex: 1; min-width: 220px; }
+input, select, textarea { background: #0f1115; border: 1px solid #2c3240; color: #d7dae0; border-radius: 7px; padding: 8px 10px; font-size: 13px; }
+input.key { flex: 1; min-width: 200px; }
+textarea { width: 100%; min-height: 64px; font-family: ui-monospace, monospace; }
 button { background: #2456c4; border: 0; color: #fff; border-radius: 7px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
 button.ghost { background: #262b36; }
+button.danger { background: #7a2f2a; }
+button:disabled { opacity: .4; cursor: default; }
 .status { font-size: 12.5px; margin-top: 10px; min-height: 18px; }
-.ok { color: #5ec26a; } .err { color: #e06c5e; }
+.ok { color: #5ec26a; } .err { color: #e06c5e; } .dim { color: #8a909c; }
 .chips { margin-top: 8px; }
 .chip { display: inline-block; background: #262b36; border-radius: 5px; padding: 2px 8px; font-size: 11.5px; margin: 2px 4px 2px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #20242e; vertical-align: top; }
+td.dim { color: #8a909c; }
 .note { color: #8a909c; font-size: 12.5px; margin-top: 26px; border-top: 1px solid #262b36; padding-top: 14px; }
+label.opt { display: flex; gap: 6px; align-items: center; font-size: 13px; }
 </style>
 </head>
 <body>
 <main>
-<h1>Basal Router — provider keys</h1>
-<p class="sub">Keys are saved to <code>providers.json</code> (chmod&nbsp;600, outside the repo). The panel listens
-on 127.0.0.1 only. The Test button sends a one-token request to the provider's probe model. The registry
-contains free and local models only.</p>
+<h1>Basal Router — control panel</h1>
+<p class="sub">One model to rule them all. Keys are stored in <code>providers.json</code> (chmod 600, outside
+the repo); the panel listens on 127.0.0.1 only and never logs keys. Settings apply from the next
+request — no restart. The registry holds max 20 options (an ollama-mode limit).</p>
+
 <div id="providers"></div>
+
 <div class="card">
 <h2>settings</h2>
-<div class="url">Applies from the next request — no restart needed. Empty floor = the models.json value (0.55).</div>
+<div class="meta">Empty/blank values fall back to models.json defaults. confidence floor: below it the router defers to the default model.</div>
 <div class="row">
-  <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="s-footer" checked> answer footer (which model + why)</label>
-  <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="s-log" checked> log decisions</label>
-  <label style="display:flex;gap:6px;align-items:center">confidence floor
-    <input type="number" id="s-floor" step="0.05" min="0" max="1" style="width:90px" placeholder="0.55"></label>
-  <button class="ghost" onclick="saveSettings()">Save</button>
+  <label class="opt"><input type="checkbox" id="s-footer" checked> answer footer (which model + why)</label>
+  <label class="opt"><input type="checkbox" id="s-log" checked> log decisions</label>
+  <label class="opt"><input type="checkbox" id="s-fallback" checked> automatic fallback</label>
 </div>
-<div class="status" id="settings-status"></div>
+<div class="row" style="margin-top:10px">
+  <label class="opt">default model <select id="s-default" style="max-width:220px"></select></label>
+  <label class="opt">confidence floor <input type="number" id="s-floor" step="0.05" min="0" max="1" style="width:90px" placeholder="0.55"></label>
+  <label class="opt">exec timeout [s] <input type="number" id="s-timeout" step="30" min="30" max="3600" style="width:100px"></label>
+  <label class="opt">state language <select id="s-lang"><option value="pl">pl</option><option value="en">en</option></select></label>
 </div>
+<div style="margin-top:10px">
+  <div class="meta">routing instructions (blank = the built-in default; GEPA results can be pasted here)</div>
+  <textarea id="s-instructions" placeholder="Choose the model that best handles the task..."></textarea>
+</div>
+<div class="row" style="margin-top:8px"><button onclick="saveSettings()">Save settings</button><span class="status" id="settings-status"></span></div>
+</div>
+
+<div class="card">
+<h2>model registry</h2>
+<div class="meta" id="registry-meta">loading…</div>
+<div id="registry-table"></div>
+</div>
+
 <div class="card">
 <h2>add a provider (OpenAI-compatible)</h2>
-<div class="url">Creates a new entry in providers.json; wire models to it in models.json with the "provider" field and "runner": "direct".</div>
+<div class="meta">Creates an entry in providers.json. Then save its key, open its catalog and import models into the registry (imported models run via your key, runner "direct").</div>
 <div class="row">
   <input id="n-name" placeholder="name (e.g. groq)" style="width:150px">
   <input id="n-url" placeholder="https://.../v1" style="flex:1;min-width:200px">
-  <input id="n-probe" placeholder="probe model (optional)" style="width:210px">
+  <input id="n-probe" placeholder="probe model (optional)" style="width:200px">
   <button class="ghost" onclick="addProvider()">Add</button>
 </div>
 <div class="status" id="add-status"></div>
 </div>
-<p class="note">Security: keys are masked in the panel API and never logged; saves are protected by the
-x-panel header (against CSRF) and a Host check (against DNS rebinding). Local only — do not expose this
-panel beyond 127.0.0.1.</p>
+
+<p class="note">Security: keys are masked in the panel API and never logged; writes are protected by the
+x-panel header (CSRF) and a Host check (DNS rebinding). Local only — do not expose this panel beyond
+127.0.0.1. Removing a provider is blocked while registry models use it; removing a model is blocked for
+the default model.</p>
 </main>
 <script>
-async function api(path, body) {
-  const r = await fetch(path, {method: "POST", headers: {"x-panel": "1", "content-type": "application/json"}, body: JSON.stringify(body || {})});
+async function api(path, body, method) {
+  const r = await fetch(path, {method: method || "POST",
+    headers: {"x-panel": "1", "content-type": "application/json"},
+    body: method === "DELETE" ? undefined : JSON.stringify(body || {})});
   if (!r.ok) throw new Error((await r.json()).error || r.status);
   return r.json();
 }
-function card(p) {
+function providerCard(p) {
   return `<div class="card" id="card-${p.name}">
     <h2>${p.name}</h2>
     <div class="url">${p.baseURL}${p.probe_model ? " · probe: " + p.probe_model : ""}</div>
@@ -73,14 +101,17 @@ function card(p) {
       <input class="key" type="password" id="key-${p.name}" placeholder="${p.hasKey ? "key saved: " + p.keyMask : "paste the API key"}">
       <button onclick="save('${p.name}')">Save</button>
       <button class="ghost" onclick="test('${p.name}')">Test</button>
+      <button class="ghost" onclick="showCatalog('${p.name}')">Models</button>
+      <button class="danger" onclick="deleteProvider('${p.name}')">Delete</button>
     </div>
     <div class="status" id="st-${p.name}">${p.hasKey ? '<span class="ok">key saved (' + p.keyMask + ')</span>' : '<span class="err">no key</span>'}</div>
     ${p.models.length ? '<div class="chips">' + p.models.map(m => `<span class="chip">${m}</span>`).join("") + "</div>" : ""}
+    <div id="catalog-${p.name}"></div>
   </div>`;
 }
 async function refresh() {
   const s = await (await fetch("/panel/api/state")).json();
-  document.getElementById("providers").innerHTML = s.providers.map(card).join("");
+  document.getElementById("providers").innerHTML = s.providers.map(providerCard).join("");
 }
 async function save(name) {
   const el = document.getElementById("st-" + name);
@@ -88,7 +119,7 @@ async function save(name) {
   try {
     await api("/panel/api/providers/" + name, {apiKey: document.getElementById("key-" + name).value});
     document.getElementById("key-" + name).value = "";
-    await refresh();
+    await refresh(); await loadSettings();
   } catch (e) { el.innerHTML = `<span class="err">${e}</span>`; }
 }
 async function test(name) {
@@ -99,6 +130,91 @@ async function test(name) {
     el.innerHTML = t.ok ? `<span class="ok">OK · ${t.model} · ${t.latency_ms} ms</span>`
                          : `<span class="err">ERROR ${t.status || ""} ${t.error || ""}</span>`;
   } catch (e) { el.innerHTML = `<span class="err">${e}</span>`; }
+}
+async function deleteProvider(name) {
+  if (!confirm(`Delete provider "${name}"?`)) return;
+  const el = document.getElementById("st-" + name);
+  try {
+    await api("/panel/api/providers/" + name, null, "DELETE");
+    el.innerHTML = '<span class="ok">deleted</span>';
+    await refresh(); await loadRegistry();
+  } catch (e) { el.innerHTML = `<span class="err">${e}</span>`; }
+}
+async function showCatalog(name) {
+  const box = document.getElementById("catalog-" + name);
+  box.innerHTML = '<div class="status">loading catalog…</div>';
+  try {
+    const c = await (await fetch(`/panel/api/providers/${name}/catalog`)).json();
+    if (!c.ok) throw new Error((c).error);
+    const rows = c.models.slice(0, 50).map(m =>
+      `<tr><td>${m.id}</td><td class="dim">${m.owned_by || ""}</td><td>${
+        m.imported ? '<span class="ok">in registry</span>'
+                   : `<button class="ghost" onclick="importModel('${name}', '${m.id}')">Import</button>`
+      }</td></tr>`).join("");
+    box.innerHTML = `<table><tr><th>model</th><th>owner</th><th></th></tr>${rows}</table>`;
+  } catch (e) {
+    const msg = await (async () => { try { return (await (await fetch(`/panel/api/providers/${name}/catalog`)).json()).error; } catch { return "" } })();
+    box.innerHTML = `<div class="status err">${msg || e}</div>`;
+  }
+}
+async function importModel(name, modelId) {
+  try {
+    await api("/panel/api/registry/import", {provider: name, model: modelId});
+    await loadRegistry(); await showCatalog(name);
+  } catch (e) { alert(e); }
+}
+async function loadRegistry() {
+  try {
+    const r = await (await fetch("/panel/api/registry")).json();
+    document.getElementById("registry-meta").textContent =
+      `${r.count}/${r.capacity} models · default: ${r.default_model} · models without a saved key are inactive`;
+    const rows = r.models.map(m =>
+      `<tr><td>${m.key}</td><td class="dim">${m.id}</td><td class="dim">${m.runner}${m.provider ? " (" + m.provider + ")" : ""}</td><td>${
+        m.usable ? '<span class="ok">usable</span>' : '<span class="err">needs key</span>'
+      }</td><td><button class="danger" onclick="removeModel('${m.key}')">Remove</button></td></tr>`).join("");
+    document.getElementById("registry-table").innerHTML =
+      `<table><tr><th>key</th><th>id</th><th>runner</th><th>status</th><th></th></tr>${rows}</table>`;
+    const sel = document.getElementById("s-default");
+    sel.innerHTML = '<option value="">(models.json default)</option>' +
+      r.models.map(m => `<option value="${m.key}">${m.key}</option>`).join("");
+  } catch (e) { document.getElementById("registry-meta").textContent = String(e); }
+}
+async function removeModel(key) {
+  if (!confirm(`Remove model "${key}" from the registry?`)) return;
+  try {
+    await api("/panel/api/registry/remove", {key: key});
+    await loadRegistry(); await loadSettings(); await refresh();
+  } catch (e) { alert(e); }
+}
+async function loadSettings() {
+  const s = (await (await fetch("/panel/api/settings")).json()).settings;
+  document.getElementById("s-footer").checked = !!s.answer_footer;
+  document.getElementById("s-log").checked = !!s.log_decisions;
+  document.getElementById("s-fallback").checked = !!s.fallback_enabled;
+  document.getElementById("s-floor").value = s.confidence_floor ?? "";
+  document.getElementById("s-timeout").value = s.exec_timeout_s ?? "";
+  document.getElementById("s-lang").value = s.state_lang || "pl";
+  document.getElementById("s-instructions").value = s.routing_instructions || "";
+  const sel = document.getElementById("s-default");
+  if (sel.options.length) sel.value = s.default_model || "";
+}
+async function saveSettings() {
+  const st = document.getElementById("settings-status");
+  try {
+    const floor = parseFloat(document.getElementById("s-floor").value);
+    const timeout = parseFloat(document.getElementById("s-timeout").value);
+    const body = {answer_footer: document.getElementById("s-footer").checked,
+                  log_decisions: document.getElementById("s-log").checked,
+                  fallback_enabled: document.getElementById("s-fallback").checked,
+                  state_lang: document.getElementById("s-lang").value,
+                  default_model: document.getElementById("s-default").value,
+                  routing_instructions: document.getElementById("s-instructions").value};
+    if (!isNaN(floor)) body.confidence_floor = floor;
+    if (!isNaN(timeout)) body.exec_timeout_s = timeout;
+    await api("/panel/api/settings", body);
+    st.innerHTML = '<span class="ok">saved — applies from the next request</span>';
+    await loadSettings();
+  } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
 }
 async function addProvider() {
   const st = document.getElementById("add-status");
@@ -112,27 +228,9 @@ async function addProvider() {
     await refresh();
   } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
 }
-async function loadSettings() {
-  const s = (await (await fetch("/panel/api/settings")).json()).settings;
-  document.getElementById("s-footer").checked = !!s.answer_footer;
-  document.getElementById("s-log").checked = !!s.log_decisions;
-  document.getElementById("s-floor").value = s.confidence_floor ?? "";
-}
-async function saveSettings() {
-  const st = document.getElementById("settings-status");
-  try {
-    const floor = parseFloat(document.getElementById("s-floor").value);
-    const body = {answer_footer: document.getElementById("s-footer").checked,
-                  log_decisions: document.getElementById("s-log").checked};
-    if (!isNaN(floor)) body.confidence_floor = floor;
-    const r = await fetch("/panel/api/settings", {method: "POST", headers: {"x-panel": "1", "content-type": "application/json"}, body: JSON.stringify(body)});
-    if (!r.ok) throw new Error((await r.json()).error || r.status);
-    st.innerHTML = '<span class="ok">saved — applies from the next request</span>';
-    await loadSettings();
-  } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
-}
 refresh();
 loadSettings();
+loadRegistry();
 </script>
 </body>
 </html>

@@ -56,12 +56,62 @@ def usable_models(data=None):
     return usable
 
 
-def build_request(task, models, gold=None):
+def build_request(task, models, gold=None, instructions=None, lang="pl"):
     criteria = {m["key"]: f"{m['name']}. {m['card']}" for m in models}
-    question = {"type": "choice", "instructions": INSTRUCTIONS, "criteria": criteria}
+    question = {"type": "choice", "instructions": instructions or INSTRUCTIONS, "criteria": criteria}
     if gold is not None:
         question["gold"] = gold
-    return {"state": task, "lang": "pl", "questions": {"model": question}}
+    return {"state": task, "lang": lang, "questions": {"model": question}}
+
+
+DEVS_CACHE = Path("/tmp/kilo/modelsdev.json")
+
+
+def load_modelsdev(max_age_days=7):
+    if DEVS_CACHE.exists() and time.time() - DEVS_CACHE.stat().st_mtime < max_age_days * 86400:
+        try:
+            return json.loads(DEVS_CACHE.read_bytes())
+        except Exception:
+            pass
+    try:
+        data = httpx.get("https://models.dev/api.json", timeout=120).json()
+        DEVS_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        DEVS_CACHE.write_bytes(json.dumps(data).encode())
+        return data
+    except Exception:
+        return {}
+
+
+def build_catalog_card(provider_name, model_id):
+    """Best-effort card for an imported model: real data from models.dev, else a minimal template."""
+    dev = load_modelsdev()
+    entry = ((dev.get(provider_name) or {}).get("models") or {}).get(model_id)
+    if entry is None:
+        for prov in dev.values():
+            if model_id in (prov.get("models") or {}):
+                entry = prov["models"][model_id]
+                break
+    if not entry:
+        return (f"Model served by your own {provider_name} key. "
+                "Edit this card in models.json if routing needs more detail.")
+    limit = entry.get("limit") or {}
+    cost = entry.get("cost") or {}
+    parts = [f"Context: {limit.get('context') or '?'}, output: {limit.get('output') or '?'}."]
+    if cost.get("input") == 0 and cost.get("output") == 0:
+        parts.append("Free.")
+    caps = []
+    if entry.get("reasoning"):
+        caps.append("deep reasoning")
+    if entry.get("tool_call"):
+        caps.append("tools (function calling)")
+    if "image" in (entry.get("modalities") or {}).get("input", []):
+        caps.append("images (vision)")
+    if caps:
+        parts.append("Capabilities: " + "; ".join(caps) + ".")
+    description = " ".join((entry.get("description") or "").split())
+    if description:
+        parts.append(description[:160] + ("…" if len(description) > 160 else ""))
+    return " ".join(parts)
 
 
 def route(task):
@@ -71,7 +121,10 @@ def route(task):
     if not models:
         raise RuntimeError(NO_MODELS_HINT)
     by_key = {m["key"]: m for m in models}
-    response = httpx.post(f"{BASAL_URL}/v1/systemone", json=build_request(task, models), timeout=180)
+    instructions = settings.get("routing_instructions") or INSTRUCTIONS
+    lang = settings.get("state_lang") or "pl"
+    response = httpx.post(f"{BASAL_URL}/v1/systemone",
+                          json=build_request(task, models, instructions=instructions, lang=lang), timeout=180)
     response.raise_for_status()
     body = response.json()
     answer = body["answers"]["model"]
@@ -80,8 +133,11 @@ def route(task):
     chosen = answer["choice"]
     floor = settings.get("confidence_floor", data.get("confidence_floor", 0.55))
     deferred = confidence < floor
-    final = data.get("default_model", models[0]["key"]) if deferred else chosen
-    entry = build_request(task, models, gold=None)
+    fallback = settings.get("default_model") or data.get("default_model") or models[0]["key"]
+    if fallback not in by_key:
+        fallback = models[0]["key"]
+    final = fallback if deferred else chosen
+    entry = build_request(task, models, gold=None, instructions=instructions, lang=lang)
     entry.update({
         "id": uuid.uuid4().hex[:8],
         "group": "router",

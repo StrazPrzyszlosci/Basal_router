@@ -43,6 +43,7 @@ apps (Kilo Code / opencode / hermes / any OpenAI-compatible client)
 | `.kilo/command/route.md` | the `/route <task>` command |
 | `experiments/` | configuration research; results in `experiments/results/` and `RESULTS.md` |
 | `RESULTS.md` | research results |
+| `USAGE.md` | operations guide: services, clients, panel, research, calibration, optimisation |
 | `ROADMAP.md` | architecture, phases (calibration, GEPA, OpenEvolve, LangGraph), vision status |
 | `VISION.md` | the original product vision this repo implements |
 
@@ -85,6 +86,25 @@ Results: `RESULTS.md`; raw measurements: `experiments/results/` (`eval_*.jsonl` 
 Note: benchmark task texts are intentionally in Polish — they are the router's real-world input language
 (the primary usage of this router), not repo prose. Historical eval files keep the exact prompts used in
 each measurement.
+
+## Timings (Intel i3-10110U, 2C/4T, 16 GB RAM under heavy swap)
+
+| Operation | Typical time |
+|---|---|
+| `basal-serve` startup (warm cache) | ~8 s |
+| First decision after start (model load) | ~19 s |
+| Warm decision, short state (3 questions, ~370 tokens) | ~9 s |
+| Routing decision, 15 options, concise role cards (C1/C4) | median ~38 s, p90 ~65 s |
+| Routing decision, longer hybrid cards (C3) | median ~66 s |
+| Execution via opencode CLI (free models) | 30-180 s |
+| Full routed request (decision + execution + footer) | typically 1-4 min |
+| `basal-calibrate` fit, 45 labelled decisions | ~30 min |
+| GEPA micro-iteration (6-task seed eval + 1 reflection) | ~10-15 min |
+
+Times scale with free RAM: ollama keeps the 1.7 GB model loaded (~1.1 GB RSS); when the system swaps
+hard, a single decision can reach 2-3 minutes and long-running loops may get OOM-killed — the
+research harness and GEPA both resume from their checkpoints (`progress_*.json`, `gepa_state.bin`).
+On a quiet machine or with an NVIDIA GPU, decision latency drops by an order of magnitude.
 
 ## Status
 
