@@ -6,5 +6,19 @@
     "dropped": [],
     "dropped_entries": [],
     "reason": "Fills the missing creative-writing niche with frontier-scale Inkling plus a lighter conversational writer (Xing4.0) and a note/drafting helper (Dots3-Note), adds the registry's only free guardrail (Nemotron 3.5 Content Safety) and omni audio/vision perception beyond the image-only VL slot, and drops nothing since no entries vanished."
+  },
+  {
+    "n": 2,
+    "ts": "2026-10-21T11:19:41",
+    "added": [
+      "google-gemma-4-31b-it-free",
+      "thinkingmachines-inkling-free",
+      "xingchen-agi-xing4-0-29b-a4b-fre",
+      "nvidia-nemotron-3-nano-omni-30b-",
+      "nvidia-nemotron-3-5-content-safe"
+    ],
+    "dropped": [],
+    "dropped_entries": [],
+    "reason": "No entries vanished so nothing is dropped, and the fifth additions cover the named creative-writing gap (Gemma 4 31B, Inkling, Xing4.0) plus genuinely missing audio-omni and content-safety specialisations from the same free OpenRouter pool."
   }
 ]
