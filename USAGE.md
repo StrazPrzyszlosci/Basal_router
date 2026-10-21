@@ -167,7 +167,24 @@ through routerd. Hence the micro budget by default:
 - Scaling up: more `--tasks`, more `--max-metric-calls`, and/or a faster reflection LLM —
   swap `reflect_via_routerd` for a paid API call (a few cents per run)
 
-## 6. OpenEvolve (scaffold, run when you have a fast LLM)
+## 6. ABSTRAL-style architecture learning (opt/abstral_loop.py)
+
+Adapted from arXiv:2603.22791 (the paper has no public implementation). Unlike GEPA — which evolves
+prompt *text* — this loop learns the *organisation* of the pipeline: verify on/off and its threshold,
+the escalation model, max attempts, fallback, and the confidence floor. One cycle runs a task subset
+through route -> run -> verify -> escalate, analyses the traces (routing accuracy, verification and
+escalation rates, model calls = the cost register), then a free model proposes the smallest topology
+change plus new K/R/T/P knowledge entries. Guardrails: every change is bounded, journaled in
+`opt/abstral/change_log.json`, validated by the next cycle and auto-reverted if accuracy regresses by
+more than 0.05; `--revert <cycle>` undoes any change manually.
+
+```bash
+~/basal-env/bin/python opt/abstral_loop.py --tasks 3      # one cycle (~12-25 min on this CPU)
+~/basal-env/bin/python opt/abstral_loop.py --status
+~/basal-env/bin/python opt/abstral_loop.py --revert 2
+```
+
+## 7. OpenEvolve (scaffold, run when you have a fast LLM)
 
 `opt/openevolve_router.py` holds the evaluator (routing accuracy on the first 6 benchmark tasks) and
 the current cards as the genome. A meaningful evolution is LLM-call-bound — days over free
@@ -180,7 +197,7 @@ openevolve-run opt/openevolve_initial_program.py opt/openevolve_evaluator.py --c
 ~/basal-env/bin/python opt/openevolve_router.py --baseline
 ```
 
-## 7. Hardware notes (i3-10110U, 16 GB, heavy swap)
+## 8. Hardware notes (i3-10110U, 16 GB, heavy swap)
 
 - one decision: 30-70 s depending on swap pressure; `basal-serve` start: ~8 s (warm cache)
 - keep `free -h` in mind: below ~3 GB available, processes get OOM-killed (the harness resumes)

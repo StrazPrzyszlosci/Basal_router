@@ -166,7 +166,11 @@ come from `kilo models nvidia` (client id vs NIM API model name differ, e.g. `nv
 
 ## Notes
 
-- "Abstral" could not be identified (GitHub/PyPI) — needs clarification.
+- **ABSTRAL** identified (arXiv:2603.22791, "Automatic Design of Multi-Agent Systems Through Iterative
+  Refinement and Topology Optimization") — no public code, so it lives here as an adapted
+  architecture-learning loop (`opt/abstral_loop.py`): BUILD -> RUN -> ANALYZE -> UPDATE over the
+  router pipeline topology, with a cost register, a regression gate (auto-revert on accuracy loss)
+  and a full change log (`opt/abstral/`).
 - Kilo Code favourites are UI state, not config — they live in `models.json`; add Kilo-gateway models
   with `runner: "kilo"` (route will name them, switching stays manual).
 - `qwen-local` must be pulled into Ollama first; currently only basal is there.
