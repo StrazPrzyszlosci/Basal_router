@@ -1,3 +1,0 @@
-2026-10-21 04:37:51,415 WARNING hermes_cli.post_update: config migration skipped: This config predates version 12 (~2 years old) and can no longer be auto-migrated. Back up /media/magazyn/home/teresa/Dokumenty/HYC/basal/opt/hermes_sandbox/home/config.yaml and run `hermes setup` to regenerate, or manually set _config_version: 12 after reviewing the changelog.
-2026-10-21 04:52:33,064 WARNING gateway.run: Another Hermes home's gateway owns this host (PID 828404 (no bound port; profiles: default)); starting this home's gateway beside it.
-2026-10-21 04:52:47,258 WARNING gateway.run: No messaging platforms enabled.

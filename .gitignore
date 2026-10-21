@@ -22,11 +22,14 @@ __pycache__/
 experiments/results/progress_*
 opt/gepa_result/gepa_state.bin
 opt/gepa_result/live.log
+opt/gepa_result/generated_best_outputs_valset/
 opt/abstral/cycle.log
 opt/discovery/refresh.log
+
+# hermes sandbox: runtime state stays out of git, only the intended config is tracked
+opt/hermes_sandbox/home/*
+!opt/hermes_sandbox/home/config.yaml
 opt/hermes_sandbox/scratch/
-opt/hermes_sandbox/home/state.db*
-opt/gepa_result/generated_best_outputs_valset/
 
 # os / editor junk
 .DS_Store
