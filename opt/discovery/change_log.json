@@ -20,5 +20,21 @@
     "dropped": [],
     "dropped_entries": [],
     "reason": "No entries vanished so nothing is dropped, and the fifth additions cover the named creative-writing gap (Gemma 4 31B, Inkling, Xing4.0) plus genuinely missing audio-omni and content-safety specialisations from the same free OpenRouter pool."
+  },
+  {
+    "n": 3,
+    "ts": "2026-10-21T12:20:40",
+    "added": [],
+    "dropped": [],
+    "dropped_entries": [],
+    "reason": "No entries vanished from source; no additions needed."
+  },
+  {
+    "n": 4,
+    "ts": "2026-10-21T18:22:50",
+    "added": [],
+    "dropped": [],
+    "dropped_entries": [],
+    "reason": "No vanished entries to drop and zero additions allowed per constraints"
   }
 ]

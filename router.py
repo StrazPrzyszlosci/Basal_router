@@ -11,13 +11,18 @@ from pathlib import Path
 import httpx
 
 DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(DIR / "opt"))
+try:
+    import performance  # noqa: E402  (passive speed measurement; import-safe, no router import)
+except Exception:
+    performance = None
 REGISTRY_PATH = DIR / "models.json"
 LOG_PATH = DIR / "decisions.jsonl"
 BASAL_URL = os.environ.get("BASAL_URL", "http://127.0.0.1:8000")
 PROVIDERS_PATH = DIR / "providers.json"
 SETTINGS_PATH = DIR / "settings.json"
-OPENCODE = "/home/krzysiek/.opencode/bin/opencode"
-HERMES = "/home/krzysiek/.local/bin/hermes"
+OPENCODE = os.environ.get("OPENCODE_BIN", "/home/krzysiek/.opencode/bin/opencode")
+HERMES = os.environ.get("HERMES_BIN", "/home/krzysiek/.local/bin/hermes")
 HERMES_SANDBOX = DIR / "opt" / "hermes_sandbox" / "home"
 NO_MODELS_HINT = ("No model could be executed. opencode free models require an active opencode session "
                   "(check `opencode auth list`); provider-key models (nim-*) need a key saved at "
@@ -46,14 +51,19 @@ def load_settings():
 
 
 def usable_models(data=None):
-    """Registry entries executable right now: opencode models always, direct models only with a saved key."""
+    """Registry entries executable right now: opencode models always, direct models only with a
+    saved key — minus models whose last calls all failed recently (availability cooldown)."""
     data = data or load_registry()
+    settings = load_settings()
+    skip_failing = settings.get("skip_recently_failing", True)
     providers = load_providers()
     usable = []
     for m in data["models"]:
         if m.get("runner", "opencode") == "direct":
             if not (providers.get(m.get("provider")) or {}).get("apiKey"):
                 continue
+        if skip_failing and performance is not None and performance.recently_failing(m["key"]):
+            continue
         usable.append(m)
     return usable
 
@@ -207,38 +217,73 @@ def resolve_hermes_model(requested=None):
     return requested or load_settings().get("hermes_model") or "auto"
 
 
-def execute(model_key, task, timeout_s=600, runner=None, workdir=None):
+def _parse_opencode_jsonl(stdout):
+    texts = []
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except Exception:
+            return None
+        part = event.get("part") or {}
+        if event.get("type") == "text" and part.get("text"):
+            texts.append(part["text"])
+    return "\n".join(texts) if texts else None
+
+
+def execute(model_key, task, timeout_s=600, runner=None, workdir=None, messages=None):
+    """Execute a task on the chosen model. `messages` carries the original OpenAI-format messages
+    (roles, history, multimodal parts) for direct providers; the CLI runner gets the full task text.
+    Every call is passively timed (no synthetic traffic) unless measure_performance is off."""
     entry = next((m for m in load_registry()["models"] if m["key"] == model_key), None)
     if entry is None:
         raise RuntimeError(f"unknown model: {model_key}")
     runner = runner or entry.get("runner", "opencode")
-    if runner == "hermes":
-        if not hermes_general_enabled():
-            raise RuntimeError("Hermes is reserved for model-registry updates. Enable 'Hermes agent "
-                               "(general use)' in the panel settings to run other tasks with it.")
-        return execute_hermes(model_key or resolve_hermes_model(), task, timeout_s)
-    if runner == "opencode":
-        proc = subprocess.run(
-            [OPENCODE, "run", "-m", entry["id"], task],
-            capture_output=True, text=True, timeout=timeout_s, cwd=workdir,
-        )
-        if proc.stdout.strip():
-            return proc.stdout[-20000:]
-        raise RuntimeError(f"opencode returned no output: {proc.stderr[-500:] or '(no stderr)'}")
-    if runner == "direct":
-        provider = load_providers().get(entry.get("provider"), {})
-        if not provider.get("apiKey"):
-            raise RuntimeError(f"missing API key for '{entry.get('provider')}': fill in providers.json")
-        response = httpx.post(
-            f"{provider['baseURL'].rstrip('/')}/chat/completions",
-            headers={"Authorization": f"Bearer {provider['apiKey']}"},
-            json={"model": entry.get("model", entry["id"]),
-                  "messages": [{"role": "user", "content": task}]},
-            timeout=timeout_s,
-        )
-        response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
-    raise RuntimeError(f"unknown runner: {runner}")
+    started = time.time()
+    ok, tokens = False, None
+    try:
+        if runner == "hermes":
+            if not hermes_general_enabled():
+                raise RuntimeError("Hermes is reserved for model-registry updates. Enable 'Hermes agent "
+                                   "(general use)' in the panel settings to run other tasks with it.")
+            result = execute_hermes(model_key or resolve_hermes_model(), task, timeout_s)
+            ok = True
+            return result
+        if runner == "opencode":
+            proc = subprocess.run(
+                [OPENCODE, "run", "--format", "json", "-m", entry["id"], task],
+                capture_output=True, text=True, timeout=timeout_s, cwd=workdir,
+            )
+            parsed = _parse_opencode_jsonl(proc.stdout) if proc.stdout else None
+            if parsed or proc.stdout.strip():
+                ok = True
+                return (parsed or proc.stdout)[-20000:]
+            raise RuntimeError(f"opencode returned no output: {proc.stderr[-500:] or '(no stderr)'}")
+        if runner == "direct":
+            provider = load_providers().get(entry.get("provider"), {})
+            if not provider.get("apiKey"):
+                raise RuntimeError(f"missing API key for '{entry.get('provider')}': fill in providers.json")
+            response = httpx.post(
+                f"{provider['baseURL'].rstrip('/')}/chat/completions",
+                headers={"Authorization": f"Bearer {provider['apiKey']}"},
+                json={"model": entry.get("model", entry["id"]),
+                      "messages": messages or [{"role": "user", "content": task}]},
+                timeout=timeout_s,
+            )
+            response.raise_for_status()
+            body = response.json()
+            tokens = (body.get("usage") or {}).get("completion_tokens")
+            ok = True
+            return body["choices"][0]["message"]["content"]
+        raise RuntimeError(f"unknown runner: {runner}")
+    finally:
+        if performance is not None and load_settings().get("measure_performance", True):
+            try:
+                performance.record(model_key, runner, ok, time.time() - started, tokens)
+            except Exception:
+                pass
 
 
 def annotate():

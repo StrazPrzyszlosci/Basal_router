@@ -24,13 +24,19 @@ from starlette.routing import Route
 
 import router
 
+try:
+    import performance  # noqa: E402  (passive speed measurement; router.py already put opt/ on sys.path)
+except Exception:
+    performance = None
+
 PORT = 8788
 VIRTUAL_MODEL = "router/auto"
 PANEL_HTML = Path(__file__).resolve().parent / "panel.html"
 NAME_RE = re.compile(r"^[a-z0-9-]{1,32}$")
 
 
-def task_from_messages(messages):
+def task_text(messages):
+    """Full, untrimmed task text — this is what the target model executes (roles preserved)."""
     parts = []
     for message in messages:
         role = message.get("role", "user")
@@ -38,10 +44,14 @@ def task_from_messages(messages):
         if isinstance(content, list):
             content = " ".join(p.get("text", "") for p in content if isinstance(p, dict))
         parts.append(f"[{role}] {content}")
-    task = "\n".join(parts).strip()
-    if len(task) > 8000:
-        task = task[:5000] + "\n(...)\n" + task[-2500:]
-    return task
+    return "\n".join(parts).strip()
+
+
+def trim_for_routing(text):
+    """Basal (ollama mode) reads at most 4,096 tokens of state — trim head+tail for classification only."""
+    if len(text) > 8000:
+        return text[:5000] + "\n(...)\n" + text[-2500:]
+    return text
 
 
 def resolve_requested(model_name):
@@ -110,6 +120,9 @@ async def panel_get_settings(request):
         "model_autorefresh": settings.get("model_autorefresh", True),
         "hermes_model": settings.get("hermes_model") or "auto",
         "hermes_enabled": settings.get("hermes_enabled", False),
+        "measure_performance": settings.get("measure_performance", True),
+        "skip_recently_failing": settings.get("skip_recently_failing", True),
+        "benchmarks_in_prompt": settings.get("benchmarks_in_prompt", False),
     }})
 
 
@@ -161,13 +174,21 @@ async def panel_save_settings(request):
         current["hermes_model"] = "auto" if value in ("auto",) else value
     if "hermes_enabled" in body:
         current["hermes_enabled"] = bool(body["hermes_enabled"])
+    if "measure_performance" in body:
+        current["measure_performance"] = bool(body["measure_performance"])
+    if "skip_recently_failing" in body:
+        current["skip_recently_failing"] = bool(body["skip_recently_failing"])
+    if "benchmarks_in_prompt" in body:
+        current["benchmarks_in_prompt"] = bool(body["benchmarks_in_prompt"])
     save_settings_file(current)
     return await panel_get_settings(request)
 
 
 async def chat_completions(request):
     body = await request.json()
-    task = task_from_messages(body.get("messages", []))
+    messages = body.get("messages", [])
+    full_task = task_text(messages)
+    routing_state = trim_for_routing(full_task)
     forced = resolve_requested(body.get("model", ""))
     try:
         if forced:
@@ -175,7 +196,7 @@ async def chat_completions(request):
                          "confidence": 1.0, "deferred": False, "forced": True,
                          "ranking": []}
         else:
-            decision = await run_in_threadpool(router.route, task)
+            decision = await run_in_threadpool(router.route, routing_state)
         settings = router.load_settings()
         timeout_s = settings.get("exec_timeout_s", 600)
         candidates = [decision["model"]]
@@ -188,7 +209,8 @@ async def chat_completions(request):
         fallback_errors = []
         for key in candidates:
             try:
-                content = await run_in_threadpool(router.execute, key, task, timeout_s)
+                content = await run_in_threadpool(router.execute, key, full_task, timeout_s,
+                                                    messages=messages)
                 decision["model"] = key
                 break
             except Exception as exc:
@@ -400,8 +422,11 @@ async def panel_registry(request):
         return JSONResponse({"error": "forbidden"}, status_code=403)
     data = router.load_registry()
     usable = {m["key"] for m in router.usable_models()}
+    speed = performance.stats() if performance else {}
     models = [{"key": m["key"], "id": m["id"], "runner": m.get("runner", "opencode"),
                "provider": m.get("provider"), "usable": m["key"] in usable,
+               "speed": speed.get(m["key"]) or None,
+               "benchmarks": (m.get("meta") or {}).get("display_benchmarks", "")[:140],
                "card": m["card"][:120]} for m in data["models"]]
     return JSONResponse({"default_model": data.get("default_model"),
                          "confidence_floor": data.get("confidence_floor"),

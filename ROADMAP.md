@@ -157,7 +157,7 @@ come from `kilo models nvidia` (client id vs NIM API model name differ, e.g. `nv
 | Free models via opencode CLI | **works** (opencode runner) |
 | Own keys (NIM etc.) in a secure store | **skeleton done** (providers.json chmod 600, 127.0.0.1, key panel) |
 | Fallback on errors | **basic** (next from basal's ranking; no mid-stream switching — streaming is emulated) |
-| Model catalog with benchmarks | **works** — automated discovery (`opt/discovery.py`): models.dev + live opencode list + OpenRouter free catalog + keyed-provider catalogs, LLM-written role cards, cron every 6 h, change log with revert |
+| Model catalog with benchmarks | **works** — automated discovery (`opt/discovery.py`) plus **real benchmark scores in every card** where they exist (`opt/benchmarks.py`: Artificial Analysis indices and WebDev Arena Elo from the OpenRouter API; models without published benchmarks get no line) |
 | RPM/TPM scheduler, 429 + Retry-After | to do |
 | Learning from performance (latency, errors, quality) | collecting since day one (decisions.jsonl) → GEPA/calibration |
 | Web stats panel (FastAPI + SQLite) | to do |

@@ -50,6 +50,9 @@ request — no restart. The registry holds max 20 options (an ollama-mode limit)
   <label class="opt"><input type="checkbox" id="s-fallback" checked> automatic fallback</label>
   <label class="opt"><input type="checkbox" id="s-autorefresh" checked> auto-refresh models</label>
   <label class="opt"><input type="checkbox" id="s-hermes-on"> Hermes agent (general use)</label>
+  <label class="opt"><input type="checkbox" id="s-measure" checked> measure speed passively</label>
+  <label class="opt"><input type="checkbox" id="s-skipfail" checked> skip recently failing models</label>
+  <label class="opt"><input type="checkbox" id="s-benchprompt"> benchmarks/speed in the routing prompt</label>
 </div>
 <div class="row" style="margin-top:10px">
   <label class="opt">default model <select id="s-default" style="max-width:220px"></select></label>
@@ -108,20 +111,23 @@ async function api(path, body, method) {
   if (!r.ok) throw new Error((await r.json()).error || r.status);
   return r.json();
 }
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
+  c === "&" ? "&" + "amp;" : c === "<" ? "&" + "lt;" : c === ">" ? "&" + "gt;" :
+  c === '"' ? "&" + "quot;" : "&" + "#39;");
 function providerCard(p) {
-  return `<div class="card" id="card-${p.name}">
-    <h2>${p.name}</h2>
-    <div class="url">${p.baseURL}${p.probe_model ? " · probe: " + p.probe_model : ""}</div>
+  return `<div class="card" id="card-${esc(p.name)}">
+    <h2>${esc(p.name)}</h2>
+    <div class="url">${esc(p.baseURL)}${p.probe_model ? " · probe: " + esc(p.probe_model) : ""}</div>
     <div class="row">
-      <input class="key" type="password" id="key-${p.name}" placeholder="${p.hasKey ? "key saved: " + p.keyMask : "paste the API key"}">
-      <button onclick="save('${p.name}')">Save</button>
-      <button class="ghost" onclick="test('${p.name}')">Test</button>
-      <button class="ghost" onclick="showCatalog('${p.name}')">Models</button>
-      <button class="danger" onclick="deleteProvider('${p.name}')">Delete</button>
+      <input class="key" type="password" id="key-${esc(p.name)}" placeholder="${p.hasKey ? "key saved: " + esc(p.keyMask) : "paste the API key"}">
+      <button onclick="save('${esc(p.name)}')">Save</button>
+      <button class="ghost" onclick="test('${esc(p.name)}')">Test</button>
+      <button class="ghost" onclick="showCatalog('${esc(p.name)}')">Models</button>
+      <button class="danger" onclick="deleteProvider('${esc(p.name)}')">Delete</button>
     </div>
-    <div class="status" id="st-${p.name}">${p.hasKey ? '<span class="ok">key saved (' + p.keyMask + ')</span>' : '<span class="err">no key</span>'}</div>
-    ${p.models.length ? '<div class="chips">' + p.models.map(m => `<span class="chip">${m}</span>`).join("") + "</div>" : ""}
-    <div id="catalog-${p.name}"></div>
+    <div class="status" id="st-${esc(p.name)}">${p.hasKey ? '<span class="ok">key saved (' + esc(p.keyMask) + ')</span>' : '<span class="err">no key</span>'}</div>
+    ${p.models.length ? '<div class="chips">' + p.models.map(m => `<span class="chip">${esc(m)}</span>`).join("") + "</div>" : ""}
+    <div id="catalog-${esc(p.name)}"></div>
   </div>`;
 }
 async function refresh() {
@@ -162,9 +168,9 @@ async function showCatalog(name) {
     const c = await (await fetch(`/panel/api/providers/${name}/catalog`)).json();
     if (!c.ok) throw new Error((c).error);
     const rows = c.models.slice(0, 50).map(m =>
-      `<tr><td>${m.id}</td><td class="dim">${m.owned_by || ""}</td><td>${
+      `<tr><td>${esc(m.id)}</td><td class="dim">${esc(m.owned_by || "")}</td><td>${
         m.imported ? '<span class="ok">in registry</span>'
-                   : `<button class="ghost" onclick="importModel('${name}', '${m.id}')">Import</button>`
+                   : `<button class="ghost" data-action="import" data-provider="${esc(name)}" data-model="${esc(m.id)}">Import</button>`
       }</td></tr>`).join("");
     box.innerHTML = `<table><tr><th>model</th><th>owner</th><th></th></tr>${rows}</table>`;
   } catch (e) {
@@ -184,11 +190,15 @@ async function loadRegistry() {
     document.getElementById("registry-meta").textContent =
       `${r.count}/${r.capacity} models · default: ${r.default_model} · models without a saved key are inactive`;
     const rows = r.models.map(m =>
-      `<tr><td>${m.key}</td><td class="dim">${m.id}</td><td class="dim">${m.runner}${m.provider ? " (" + m.provider + ")" : ""}</td><td>${
+      `<tr><td>${esc(m.key)}</td><td class="dim">${esc(m.id)}</td><td class="dim">${esc(m.runner)}${m.provider ? " (" + esc(m.provider) + ")" : ""}</td><td>${
         m.usable ? '<span class="ok">usable</span>' : '<span class="err">needs key</span>'
-      }</td><td><button class="danger" onclick="removeModel('${m.key}')">Remove</button></td></tr>`).join("");
+      }</td><td class="dim">${
+        m.speed ? (esc(m.speed.speed_score ?? '—') + '/100 · ' + esc(m.speed.tok_s ?? '—') +
+                   ' tok/s · median ' + esc(m.speed.median_s) + 's · n=' + esc(m.speed.n))
+                : 'not measured'
+      }<br>${esc(m.benchmarks || '')}</td><td><button class="danger" data-action="remove" data-key="${esc(m.key)}">Remove</button></td></tr>`).join("");
     document.getElementById("registry-table").innerHTML =
-      `<table><tr><th>key</th><th>id</th><th>runner</th><th>status</th><th></th></tr>${rows}</table>`;
+      `<table><tr><th>key</th><th>id</th><th>runner</th><th>status</th><th>speed (measured)</th><th></th></tr>${rows}</table>`;
     const sel = document.getElementById("s-default");
     sel.innerHTML = '<option value="">(models.json default)</option>' +
       r.models.map(m => `<option value="${m.key}">${m.key}</option>`).join("");
@@ -211,6 +221,9 @@ async function loadSettings() {
   document.getElementById("s-fallback").checked = !!s.fallback_enabled;
   document.getElementById("s-autorefresh").checked = !!s.model_autorefresh;
   document.getElementById("s-hermes-on").checked = !!s.hermes_enabled;
+  document.getElementById("s-measure").checked = !!s.measure_performance;
+  document.getElementById("s-skipfail").checked = !!s.skip_recently_failing;
+  document.getElementById("s-benchprompt").checked = !!s.benchmarks_in_prompt;
   document.getElementById("s-floor").value = s.confidence_floor ?? "";
   document.getElementById("s-timeout").value = s.exec_timeout_s ?? "";
   document.getElementById("s-lang").value = s.state_lang || "pl";
@@ -230,6 +243,9 @@ async function saveSettings() {
                   fallback_enabled: document.getElementById("s-fallback").checked,
                   model_autorefresh: document.getElementById("s-autorefresh").checked,
                   hermes_enabled: document.getElementById("s-hermes-on").checked,
+                  measure_performance: document.getElementById("s-measure").checked,
+                  skip_recently_failing: document.getElementById("s-skipfail").checked,
+                  benchmarks_in_prompt: document.getElementById("s-benchprompt").checked,
                   state_lang: document.getElementById("s-lang").value,
                   default_model: document.getElementById("s-default").value,
                   hermes_model: document.getElementById("s-hermes").value,
@@ -278,6 +294,12 @@ refresh();
 loadSettings();
 loadRegistry();
 loadDiscovery();
+document.addEventListener("click", e => {
+  const b = e.target.closest("button[data-action]");
+  if (!b) return;
+  if (b.dataset.action === "import") importModel(b.dataset.provider, b.dataset.model);
+  if (b.dataset.action === "remove") removeModel(b.dataset.key);
+});
 </script>
 </body>
 </html>

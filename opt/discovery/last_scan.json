@@ -1,36 +1,24 @@
 {
-  "ts": "2026-10-21T11:03:47",
+  "ts": "2026-10-21T18:22:50",
   "sources": {
-    "opencode": 456,
+    "opencode": 436,
     "openrouter_free": 20,
     "keyed_provider_models": 0,
     "modelsdev_providers": 232
   },
   "reachable": 30,
-  "candidates": 19,
+  "candidates": 14,
   "vanished": [],
   "proposal": {
-    "add": [
-      "openrouter/google/gemma-4-31b-it:free",
-      "openrouter/thinkingmachines/inkling:free",
-      "openrouter/xingchen-agi/xing4.0-29b-a4b:free",
-      "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-      "openrouter/nvidia/nemotron-3.5-content-safety:free"
-    ],
+    "add": [],
     "drop": [],
-    "reason": "No entries vanished so nothing is dropped, and the fifth additions cover the named creative-writing gap (Gemma 4 31B, Inkling, Xing4.0) plus genuinely missing audio-omni and content-safety specialisations from the same free OpenRouter pool."
+    "reason": "No vanished entries to drop and zero additions allowed per constraints"
   },
-  "raw_proposal": "{\"add\": [\"openrouter/google/gemma-4-31b-it:free\", \"openrouter/thinkingmachines/inkling:free\", \"openrouter/xingchen-agi/xing4.0-29b-a4b:free\", \"openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free\", \"openrouter/nvidia/nemotron-3.5-content-safety:free\"], \"drop\": [], \"reason\": \"No entries vanished so nothing is dropped, and the fifth additions cover the named creative-writing gap (Gemma 4 31B, Inkling, Xing4.0) plus genuinely missing audio-omni and content-safety specialisations from the same free OpenRouter pool.\"}",
+  "raw_proposal": "{\n  \"add\": [],\n  \"drop\": [],\n  \"reason\": \"No vanished entries to drop and zero additions allowed per constraints\"\n}",
   "applied": {
-    "added": [
-      "google-gemma-4-31b-it-free",
-      "thinkingmachines-inkling-free",
-      "xingchen-agi-xing4-0-29b-a4b-fre",
-      "nvidia-nemotron-3-nano-omni-30b-",
-      "nvidia-nemotron-3-5-content-safe"
-    ],
+    "added": [],
     "dropped": [],
-    "reason": "No entries vanished so nothing is dropped, and the fifth additions cover the named creative-writing gap (Gemma 4 31B, Inkling, Xing4.0) plus genuinely missing audio-omni and content-safety specialisations from the same free OpenRouter pool.",
+    "reason": "No vanished entries to drop and zero additions allowed per constraints",
     "registry_size": 20
   }
 }
