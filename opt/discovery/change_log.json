@@ -28,5 +28,13 @@
     "dropped": [],
     "dropped_entries": [],
     "reason": "No entries vanished from source; no additions needed."
+  },
+  {
+    "n": 4,
+    "ts": "2026-10-21T18:22:50",
+    "added": [],
+    "dropped": [],
+    "dropped_entries": [],
+    "reason": "No vanished entries to drop and zero additions allowed per constraints"
   }
 ]

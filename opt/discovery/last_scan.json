@@ -1,7 +1,7 @@
 {
-  "ts": "2026-10-21T12:20:40",
+  "ts": "2026-10-21T18:22:50",
   "sources": {
-    "opencode": 456,
+    "opencode": 436,
     "openrouter_free": 20,
     "keyed_provider_models": 0,
     "modelsdev_providers": 232
@@ -12,13 +12,13 @@
   "proposal": {
     "add": [],
     "drop": [],
-    "reason": "No entries vanished from source; no additions needed."
+    "reason": "No vanished entries to drop and zero additions allowed per constraints"
   },
-  "raw_proposal": "{\"add\": [], \"drop\": [], \"reason\": \"No entries vanished from source; no additions needed.\"}",
+  "raw_proposal": "{\n  \"add\": [],\n  \"drop\": [],\n  \"reason\": \"No vanished entries to drop and zero additions allowed per constraints\"\n}",
   "applied": {
     "added": [],
     "dropped": [],
-    "reason": "No entries vanished from source; no additions needed.",
+    "reason": "No vanished entries to drop and zero additions allowed per constraints",
     "registry_size": 20
   }
 }

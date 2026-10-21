@@ -100,7 +100,7 @@ gitignored).
 | `kilo.json` | Kilo Code integration: `router/auto` provider + MCP + tool permissions |
 | `.kilo/command/route.md` | the `/route <task>` command |
 | `experiments/` | configuration research; results in `experiments/results/` and `RESULTS.md` |
-| `opt/` | optimisation stack: GEPA harness, ABSTRAL-style architecture loop (arXiv:2603.22791), OpenEvolve scaffold, self-updating model discovery, benchmark enrichment |
+| `opt/` | optimisation stack: GEPA harness, ABSTRAL-style architecture loop (arXiv:2603.22791), OpenEvolve scaffold, self-updating model discovery, benchmark enrichment, passive speed measurement |
 | `RESULTS.md` | research results |
 | `USAGE.md` | operations guide: services, clients, panel, research, calibration, optimisation |
 | `ROADMAP.md` | architecture, phases (calibration, GEPA, OpenEvolve, LangGraph), vision status |
@@ -164,6 +164,22 @@ Times scale with free RAM: ollama keeps the 1.7 GB model loaded (~1.1 GB RSS); w
 hard, a single decision can reach 2-3 minutes and long-running loops may get OOM-killed — the
 research harness and GEPA both resume from their checkpoints (`progress_*.json`, `gepa_state.bin`).
 On a quiet machine or with an NVIDIA GPU, decision latency drops by an order of magnitude.
+
+## License and attribution
+
+This repository is licensed under the **MIT License** (see `LICENSE`), chosen to be consistent with
+the way the Hermes agent is used here. It builds on and invokes — as separate executables/services,
+without modifying them — the following components:
+
+- **Hermes Agent** (MIT, Copyright (c) 2025 Nous Research) — runs as an isolated sandboxed subprocess
+  (`opt/hermes_sandbox/`) for model-registry updates only
+- **Basal** decision engine (Apache-2.0) — runs as a local service (basal-serve)
+- **opencode** CLI (MIT) — the execution path for opencode-hosted free models; those models are used
+  through the official CLI, and the project deliberately performs **no synthetic benchmark calls**
+  against them — performance is measured passively on real user requests only, per their Terms of
+  Service
+- Catalog and benchmark data come from the public **models.dev** and **OpenRouter** APIs, used under
+  their respective terms
 
 ## Status
 

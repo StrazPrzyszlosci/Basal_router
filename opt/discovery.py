@@ -279,8 +279,10 @@ def refresh():
     try:
         subprocess.run([sys.executable, str(ROOT / "opt" / "benchmarks.py"), "enrich"],
                        capture_output=True, text=True, timeout=180)
+        subprocess.run([sys.executable, str(ROOT / "opt" / "performance.py"), "refresh"],
+                       capture_output=True, text=True, timeout=120)
     except Exception as exc:
-        print(f"[refresh] benchmark enrich failed: {exc}", flush=True)
+        print(f"[refresh] post-update enrich failed: {exc}", flush=True)
     return result
 
 

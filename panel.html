@@ -50,6 +50,7 @@ request — no restart. The registry holds max 20 options (an ollama-mode limit)
   <label class="opt"><input type="checkbox" id="s-fallback" checked> automatic fallback</label>
   <label class="opt"><input type="checkbox" id="s-autorefresh" checked> auto-refresh models</label>
   <label class="opt"><input type="checkbox" id="s-hermes-on"> Hermes agent (general use)</label>
+  <label class="opt"><input type="checkbox" id="s-measure" checked> measure speed passively</label>
 </div>
 <div class="row" style="margin-top:10px">
   <label class="opt">default model <select id="s-default" style="max-width:220px"></select></label>
@@ -186,9 +187,13 @@ async function loadRegistry() {
     const rows = r.models.map(m =>
       `<tr><td>${m.key}</td><td class="dim">${m.id}</td><td class="dim">${m.runner}${m.provider ? " (" + m.provider + ")" : ""}</td><td>${
         m.usable ? '<span class="ok">usable</span>' : '<span class="err">needs key</span>'
+      }</td><td class="dim">${
+        m.speed ? ((m.speed.speed_score ?? '—') + '/100 · ' + (m.speed.tok_s ?? '—') +
+                   ' tok/s · median ' + m.speed.median_s + 's · n=' + m.speed.n)
+                : 'not measured'
       }</td><td><button class="danger" onclick="removeModel('${m.key}')">Remove</button></td></tr>`).join("");
     document.getElementById("registry-table").innerHTML =
-      `<table><tr><th>key</th><th>id</th><th>runner</th><th>status</th><th></th></tr>${rows}</table>`;
+      `<table><tr><th>key</th><th>id</th><th>runner</th><th>status</th><th>speed (measured)</th><th></th></tr>${rows}</table>`;
     const sel = document.getElementById("s-default");
     sel.innerHTML = '<option value="">(models.json default)</option>' +
       r.models.map(m => `<option value="${m.key}">${m.key}</option>`).join("");
@@ -211,6 +216,7 @@ async function loadSettings() {
   document.getElementById("s-fallback").checked = !!s.fallback_enabled;
   document.getElementById("s-autorefresh").checked = !!s.model_autorefresh;
   document.getElementById("s-hermes-on").checked = !!s.hermes_enabled;
+  document.getElementById("s-measure").checked = !!s.measure_performance;
   document.getElementById("s-floor").value = s.confidence_floor ?? "";
   document.getElementById("s-timeout").value = s.exec_timeout_s ?? "";
   document.getElementById("s-lang").value = s.state_lang || "pl";
@@ -230,6 +236,7 @@ async function saveSettings() {
                   fallback_enabled: document.getElementById("s-fallback").checked,
                   model_autorefresh: document.getElementById("s-autorefresh").checked,
                   hermes_enabled: document.getElementById("s-hermes-on").checked,
+                  measure_performance: document.getElementById("s-measure").checked,
                   state_lang: document.getElementById("s-lang").value,
                   default_model: document.getElementById("s-default").value,
                   hermes_model: document.getElementById("s-hermes").value,

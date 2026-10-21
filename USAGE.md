@@ -202,6 +202,25 @@ into the project.
 The agent's model is switchable: **auto** (basal routes per request) or any registry key — set in the
 panel ("hermes agent model") or per CLI run (`router.py hermes deepseek-flash "task"`, needs the toggle).
 
+## 6c. Passive speed measurement (opt/performance.py)
+
+Model speed in this project is **measured, not declared** — and measured **passively**: per opencode's
+Terms of Service, no synthetic benchmark calls are sent to hosted free models; only real user requests
+are timed. Direct provider APIs contribute real tok/s (from `usage.completion_tokens`); the opencode CLI
+reports timestamps but no token counts, so those models get total time and an honest "tok/s not reported
+by this runner". The Speed Score (0-100) follows the audit formula `round(100 / (1 + (200/tok_s)/20))`
+and appears only where tok/s is actually measured.
+
+Every execution is timed automatically (toggle "measure speed passively" in settings; off = no data
+collected). Stats live per model in `opt/performance/metrics.jsonl` (timing only, never task text) and
+surface as the "Speed (measured passively)" suffix on cards (`opt/performance.py refresh`) and as a
+speed column in the panel's registry table. The registry update cycle refreshes the lines automatically.
+
+```bash
+~/basal-env/bin/python opt/performance.py status      # per-model stats
+~/basal-env/bin/python opt/performance.py refresh     # rewrite the Speed lines in cards
+```
+
 ## 7. Model discovery — the self-updating registry (opt/discovery.py)
 
 Sources: models.dev (the master catalog; free = zero cost), the live `opencode models` list, the

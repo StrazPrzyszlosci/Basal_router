@@ -185,7 +185,7 @@
       "key": "mimo-flash",
       "id": "opencode/mimo-v2.6-flash-free",
       "name": "MiMo-V2.6-Flash Free",
-      "card": "Fastest flash class: short answers, simple automations, light text tasks. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 38/100.",
+      "card": "Fastest flash class: short answers, simple automations, light text tasks. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 38/100. Speed (measured passively): median 8.6 s/call over 2 measured calls, ok 100%; tok/s not reported by this runner.",
       "runner": "opencode",
       "tags": [
         "free",

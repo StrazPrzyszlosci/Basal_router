@@ -26,6 +26,7 @@ opt/gepa_result/generated_best_outputs_valset/
 opt/abstral/cycle.log
 opt/abstral/scratch/
 opt/discovery/refresh.log
+opt/performance/metrics.jsonl
 
 # hermes sandbox: runtime state stays out of git, only the intended config is tracked
 opt/hermes_sandbox/home/*
