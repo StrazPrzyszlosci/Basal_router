@@ -157,7 +157,7 @@ come from `kilo models nvidia` (client id vs NIM API model name differ, e.g. `nv
 | Free models via opencode CLI | **works** (opencode runner) |
 | Own keys (NIM etc.) in a secure store | **skeleton done** (providers.json chmod 600, 127.0.0.1, key panel) |
 | Fallback on errors | **basic** (next from basal's ranking; no mid-stream switching — streaming is emulated) |
-| Model catalog with benchmarks | next step (models.dev / OpenRouter sync) |
+| Model catalog with benchmarks | **works** — automated discovery (`opt/discovery.py`): models.dev + live opencode list + OpenRouter free catalog + keyed-provider catalogs, LLM-written role cards, cron every 6 h, change log with revert |
 | RPM/TPM scheduler, 429 + Retry-After | to do |
 | Learning from performance (latency, errors, quality) | collecting since day one (decisions.jsonl) → GEPA/calibration |
 | Web stats panel (FastAPI + SQLite) | to do |
@@ -166,7 +166,11 @@ come from `kilo models nvidia` (client id vs NIM API model name differ, e.g. `nv
 
 ## Notes
 
-- "Abstral" could not be identified (GitHub/PyPI) — needs clarification.
+- **ABSTRAL** identified (arXiv:2603.22791, "Automatic Design of Multi-Agent Systems Through Iterative
+  Refinement and Topology Optimization") — no public code, so it lives here as an adapted
+  architecture-learning loop (`opt/abstral_loop.py`): BUILD -> RUN -> ANALYZE -> UPDATE over the
+  router pipeline topology, with a cost register, a regression gate (auto-revert on accuracy loss)
+  and a full change log (`opt/abstral/`).
 - Kilo Code favourites are UI state, not config — they live in `models.json`; add Kilo-gateway models
   with `runner: "kilo"` (route will name them, switching stays manual).
 - `qwen-local` must be pulled into Ollama first; currently only basal is there.

@@ -60,23 +60,39 @@ curl -s localhost:8788/v1/chat/completions -H 'content-type: application/json' \
 ~/basal-env/bin/python router.py annotate          # label decisions.jsonl with gold
 ```
 
-### Provider keys (panel)
+### Providers (panel)
 
-Open http://127.0.0.1:8788/panel — paste a key, `Save` (chmod 600 `providers.json`, masked in the API),
-`Test` sends a one-token request to the provider's probe model. Add any OpenAI-compatible provider
+Open http://127.0.0.1:8788/ — the panel loads automatically (the root redirects to `/panel`).
+Per provider: paste a key, `Save` (chmod 600 `providers.json`, masked in the API), `Test` (a one-token
+request to the probe model), `Models` (fetches the provider's `{baseURL}/models` catalog — needs a saved
+key) and `Import` adds a picked catalog model to the registry as a `direct`-runner entry with an
+auto-built card (real data from models.dev when available, a minimal template otherwise). `Delete`
+removes a provider — blocked while registry models still use it. Add any OpenAI-compatible provider
 from the form. NIM example: provider `nvidia`, probe `z-ai/glm-5.3-flash`. Until a key is saved, the
-`nim-*` registry models stay inactive and the router falls back to opencode models.
+provider's registry models stay inactive.
 
 ### Settings (panel)
 
-The settings card on the same page controls:
+The settings card controls (all live from the next request — no restart; `settings.json`, chmod 600,
+gitignored):
 - **answer footer** (default on) — every routed answer ends with
   `--- [router] answered by <model> (confidence X). Why: ... Alternatives considered: ...`
 - **log decisions** — append every decision to `decisions.jsonl` (your calibration dataset)
+- **automatic fallback** (default on) — on execution failure try the next models from basal's
+  ranking (up to 2)
 - **confidence floor** — below this confidence the router defers to the default model
-  (empty = the `models.json` value, currently 0.55)
+  (empty = the `models.json` value, 0.55)
+- **default model** — the defer target (empty = the `models.json` value)
+- **exec timeout** — per-execution timeout, 30..3600 s (default 600)
+- **state language** — `pl` or `en`; the routing prompt language
+- **routing instructions** — blank = the built-in default; paste GEPA-evolved instructions here
 
-Settings live in `settings.json` (chmod 600, gitignored) and apply from the next request — no restart.
+### Model registry (panel)
+
+The registry card lists every model with its runner and usability (models whose provider has no saved
+key are inactive), lets you remove models (blocked for the default model) and shows the 20-option cap
+(an ollama-mode limit). Imported models can be removed freely; the shipped free models can be restored
+from git history.
 
 ### Keyless operation
 
@@ -151,7 +167,62 @@ through routerd. Hence the micro budget by default:
 - Scaling up: more `--tasks`, more `--max-metric-calls`, and/or a faster reflection LLM —
   swap `reflect_via_routerd` for a paid API call (a few cents per run)
 
-## 6. OpenEvolve (scaffold, run when you have a fast LLM)
+## 6. ABSTRAL-style architecture learning (opt/abstral_loop.py)
+
+Adapted from arXiv:2603.22791 (the paper has no public implementation). Unlike GEPA — which evolves
+prompt *text* — this loop learns the *organisation* of the pipeline: verify on/off and its threshold,
+the escalation model, max attempts, fallback, and the confidence floor. One cycle runs a task subset
+through route -> run -> verify -> escalate, analyses the traces (routing accuracy, verification and
+escalation rates, model calls = the cost register), then a free model proposes the smallest topology
+change plus new K/R/T/P knowledge entries. Guardrails: every change is bounded, journaled in
+`opt/abstral/change_log.json`, validated by the next cycle and auto-reverted if accuracy regresses by
+more than 0.05; `--revert <cycle>` undoes any change manually.
+
+```bash
+~/basal-env/bin/python opt/abstral_loop.py --tasks 3      # one cycle (~12-25 min on this CPU)
+~/basal-env/bin/python opt/abstral_loop.py --status
+~/basal-env/bin/python opt/abstral_loop.py --revert 2
+```
+
+## 6b. Hermes sandbox — the registry-update agent (opt/hermes_sandbox/)
+
+The sandboxed Hermes agent (its own `HERMES_HOME` — no access to your Hermes installation, sessions or
+credentials; `--ignore-user-config --ignore-rules --safe-mode`; a fresh scratch directory; hard limits
+`agent.max_turns: 4`, `agent.run_budget_seconds: 600`) has exactly **one automatic job in this repo:
+updating the model registry**. During a registry update (cron every 6 h, or the "Update model registry
+now" button in the settings card) it fetches provider catalogs, selects which new free models to add and
+writes their role cards — the selection and card-writing reasoning run through this agent.
+
+Every other use is **disabled by default**: the `router.py hermes [model] "task"` CLI and the "hermes"
+runner refuse to run until you enable **"Hermes agent (general use)"** in the panel settings (the setting
+carries a full description; leave it off — nothing depends on it). Experimental pipelines execute
+through the normal registry runners with a scratch working directory, so synthetic tasks never write
+into the project.
+
+The agent's model is switchable: **auto** (basal routes per request) or any registry key — set in the
+panel ("hermes agent model") or per CLI run (`router.py hermes deepseek-flash "task"`, needs the toggle).
+
+## 7. Model discovery — the self-updating registry (opt/discovery.py)
+
+Sources: models.dev (the master catalog; free = zero cost), the live `opencode models` list, the
+OpenRouter free catalog and the catalogs of providers with a saved key. Which candidates to add (and
+which vanished entries to drop) is decided by a free model through routerd, and it also writes the
+role-oriented English cards for the new models. Guardrails: cap 20 options, the default model is never
+dropped, existing cards are never rewritten, every change is journaled in
+`opt/discovery/change_log.json` (`revert <n>` restores it), and the settings toggle
+`auto-refresh models` switches between scan-only and apply.
+
+```bash
+~/basal-env/bin/python opt/discovery.py scan       # sources -> proposal, no changes applied
+~/basal-env/bin/python opt/discovery.py refresh    # scan + apply (cron runs this)
+~/basal-env/bin/python opt/discovery.py status
+~/basal-env/bin/python opt/discovery.py revert 1
+```
+
+A crontab entry refreshes the registry every 6 hours (check `crontab -l`); the panel has a
+"model discovery" card with the last scan summary and a Refresh-now button.
+
+## 8. OpenEvolve (scaffold, run when you have a fast LLM)
 
 `opt/openevolve_router.py` holds the evaluator (routing accuracy on the first 6 benchmark tasks) and
 the current cards as the genome. A meaningful evolution is LLM-call-bound — days over free
@@ -164,7 +235,7 @@ openevolve-run opt/openevolve_initial_program.py opt/openevolve_evaluator.py --c
 ~/basal-env/bin/python opt/openevolve_router.py --baseline
 ```
 
-## 7. Hardware notes (i3-10110U, 16 GB, heavy swap)
+## 9. Hardware notes (i3-10110U, 16 GB, heavy swap)
 
 - one decision: 30-70 s depending on swap pressure; `basal-serve` start: ~8 s (warm cache)
 - keep `free -h` in mind: below ~3 GB available, processes get OOM-killed (the harness resumes)

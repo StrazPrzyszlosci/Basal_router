@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "topology": {
+    "verify": true,
+    "verify_threshold": 0.6,
+    "escalation_model": "nemotron-ultra",
+    "max_attempts": 2,
+    "fallback_enabled": true,
+    "confidence_floor": null
+  },
+  "knowledge": {
+    "K": [],
+    "R": [],
+    "T": [],
+    "P": []
+  },
+  "runs": [
+    {
+      "cycle": 1,
+      "ts": "2026-10-21T03:20:18",
+      "accuracy": 1.0,
+      "stats": {
+        "n": 3,
+        "routing_accuracy": 1.0,
+        "verified_rate": 1.0,
+        "escalation_rate": 0.333,
+        "mean_model_calls": 1.33,
+        "deferred_rate": 0.333
+      }
+    }
+  ]
+}

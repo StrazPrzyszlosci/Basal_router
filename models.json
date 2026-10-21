@@ -381,6 +381,76 @@
       "meta": {
         "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)"
       }
+    },
+    {
+      "key": "google-gemma-4-31b-it-free",
+      "id": "openrouter/google/gemma-4-31b-it:free",
+      "name": "google/gemma-4-31b-it:free",
+      "card": "Fast free model for open self-hosted chat and reasoning: long-document analysis (262k context), tool calling, image understanding. Not for image generation.",
+      "runner": "opencode",
+      "tags": [
+        "opencode",
+        "discovered"
+      ],
+      "meta": {
+        "card_source": "discovery (free-model written card)"
+      }
+    },
+    {
+      "key": "thinkingmachines-inkling-free",
+      "id": "openrouter/thinkingmachines/inkling:free",
+      "name": "thinkingmachines/inkling:free",
+      "card": "Fast free model for multimodal deep reasoning: visual analysis, planning, tool/function calling, long-context work (1M in / 256K out). Not for latency-critical or simple-chat tasks.",
+      "runner": "opencode",
+      "tags": [
+        "opencode",
+        "discovered"
+      ],
+      "meta": {
+        "card_source": "discovery (free-model written card)"
+      }
+    },
+    {
+      "key": "xingchen-agi-xing4-0-29b-a4b-fre",
+      "id": "openrouter/xingchen-agi/xing4.0-29b-a4b:free",
+      "name": "xingchen-agi/xing4.0-29b-a4b:free",
+      "card": "Fast free model for deep-reasoning and tool-using (function-calling) tasks: long-context chat up to 262k tokens, agent prototypes, demos, cost-sensitive workloads. Not for high-volume production serving.",
+      "runner": "opencode",
+      "tags": [
+        "opencode",
+        "discovered"
+      ],
+      "meta": {
+        "card_source": "discovery (free-model written card)"
+      }
+    },
+    {
+      "key": "nvidia-nemotron-3-nano-omni-30b-",
+      "id": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "name": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "card": "Free omni reasoning model for tasks needing deliberate thinking plus multimodality: hard math and logic, agentic tool calling, image and audio understanding with long 256k context. Not for latency-critical chat or high-volume classification where visible reasoning wastes tokens.",
+      "runner": "opencode",
+      "tags": [
+        "opencode",
+        "discovered"
+      ],
+      "meta": {
+        "card_source": "discovery (free-model written card)"
+      }
+    },
+    {
+      "key": "nvidia-nemotron-3-5-content-safe",
+      "id": "openrouter/nvidia/nemotron-3.5-content-safety:free",
+      "name": "nvidia/nemotron-3.5-content-safety:free",
+      "card": "Fast free safety model for policy screening: content moderation, risk-aware routing, image-aware abuse checks. Not for general chat, creative writing, or long-form generation.",
+      "runner": "opencode",
+      "tags": [
+        "opencode",
+        "discovered"
+      ],
+      "meta": {
+        "card_source": "discovery (free-model written card)"
+      }
     }
   ]
 }

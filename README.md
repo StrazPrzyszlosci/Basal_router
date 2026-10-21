@@ -24,6 +24,64 @@ apps (Kilo Code / opencode / hermes / any OpenAI-compatible client)
         └── execution: opencode run -m <model> | providers.json (NIM etc., keys kept locally)
 ```
 
+## How it works (request lifecycle)
+
+1. **Task assembly** — the request's `system`/`user` messages are joined into one task text; above
+   8,000 characters it is trimmed head+tail (ollama mode reads at most 4,096 tokens of state — the
+   full text still goes to the target model).
+2. **Model resolution** — `model: "auto"` (or `router/auto`) means full routing;
+   `model: "router/<key>"` forces one registry model.
+3. **Settings** are read per request from `settings.json` (managed by the panel — no restarts):
+   answer footer, decision logging, fallback, confidence floor, default model, execution timeout,
+   state language, routing instructions.
+4. **Candidate filtering** — only models executable *right now* take part: opencode/local models
+   always, `direct` models only when their provider has a saved key. Without any key: 12 candidates;
+   with an NVIDIA NIM key: 15. An empty set returns an explicit error with a `hint` — never a fake
+   answer or an instruction-as-answer.
+5. **The basal decision** — one `choice` question over the candidates (criteria: `name. card`,
+   instructions from settings or the built-in default, `lang: pl|en`). basal renders its own prompt,
+   sends it raw to Ollama and reads the **logprobs of the option codes**, producing a probability
+   distribution over models plus a calibrated `confidence` (per-type and per-option-count
+   temperatures fitted on our own 45 labelled decisions).
+6. **Deferring** — `confidence` below the floor → `deferred: true` → the default model runs instead.
+   Every decision is appended to `decisions.jsonl` (unless logging is off) in `basal-calibrate`-ready
+   format.
+7. **Execution** — runner `opencode`: `opencode run -m <id>` (the only way to reach opencode's free
+   models outside opencode); runner `direct`: plain HTTPS to the provider with the key from
+   `providers.json`. Timeout from settings (30-3600 s).
+8. **Fallback** (toggleable) — on execution failure the router takes the next entries of basal's own
+   ranking (up to 2 retries); the ranking is already part of the decision, so failover is free.
+9. **Answer footer** (toggleable) — appended to the content:
+   `--- [router] answered by <model> (confidence X). Why: ... Alternatives considered: ...`.
+10. **Response** — OpenAI format (streaming emulated as a single chunk) plus the `router` field:
+    `chosen_by_basal`, `confidence`, `deferred`, `executed_model`, `fallback_errors`.
+
+## Management panel
+
+Open http://127.0.0.1:8788/ — the root redirects to the panel. Everything applies from the next
+request; keys and settings never leave the machine (`providers.json` / `settings.json`, chmod 600,
+gitignored).
+
+- **Providers** — save a key (masked in the API), `Test` (one-token probe request), `Models` (fetches
+  the provider's `{baseURL}/models` catalog), `Import` (adds a catalog model to the registry as a
+  `direct` entry with an auto-built card from models.dev data), `Delete` (blocked while registry
+  models use the provider)
+- **Registry** — live list with usability flags (needs-key models are inactive), model removal
+  (blocked for the default model), and the 20-option cap counter (an ollama-mode limit)
+- **Settings** — answer footer, decision logging, automatic fallback, confidence floor, default model,
+  execution timeout, state language (pl/en), routing instructions (paste GEPA-evolved text here)
+
+## Data loops
+
+1. Every routing decision lands in `decisions.jsonl`; label it with `router.py annotate`.
+2. Labelled decisions feed `basal-calibrate` → `CALIBRATION.custom.json`, served with
+   `--calibration` (temperatures fitted; a certified 5% error threshold needs >=59 accepted FIT
+   decisions — until then the confidence floor is the manual guard).
+3. The benchmark and eval sets feed **GEPA**, which evolves the routing instructions and model cards
+   from execution feedback; its result goes into the panel's routing-instructions setting (or the
+   registry) and is re-measured. `router_graph.py` (LangGraph) wraps the loop as
+   route -> run -> verify, with escalation to a stronger model when verification fails.
+
 ## Files
 
 | File | Role |
@@ -42,7 +100,9 @@ apps (Kilo Code / opencode / hermes / any OpenAI-compatible client)
 | `kilo.json` | Kilo Code integration: `router/auto` provider + MCP + tool permissions |
 | `.kilo/command/route.md` | the `/route <task>` command |
 | `experiments/` | configuration research; results in `experiments/results/` and `RESULTS.md` |
+| `opt/` | optimisation stack: GEPA harness, ABSTRAL-style architecture loop (arXiv:2603.22791), OpenEvolve scaffold, self-updating model discovery |
 | `RESULTS.md` | research results |
+| `USAGE.md` | operations guide: services, clients, panel, research, calibration, optimisation |
 | `ROADMAP.md` | architecture, phases (calibration, GEPA, OpenEvolve, LangGraph), vision status |
 | `VISION.md` | the original product vision this repo implements |
 
@@ -85,6 +145,25 @@ Results: `RESULTS.md`; raw measurements: `experiments/results/` (`eval_*.jsonl` 
 Note: benchmark task texts are intentionally in Polish — they are the router's real-world input language
 (the primary usage of this router), not repo prose. Historical eval files keep the exact prompts used in
 each measurement.
+
+## Timings (Intel i3-10110U, 2C/4T, 16 GB RAM under heavy swap)
+
+| Operation | Typical time |
+|---|---|
+| `basal-serve` startup (warm cache) | ~8 s |
+| First decision after start (model load) | ~19 s |
+| Warm decision, short state (3 questions, ~370 tokens) | ~9 s |
+| Routing decision, 15 options, concise role cards (C1/C4) | median ~38 s, p90 ~65 s |
+| Routing decision, longer hybrid cards (C3) | median ~66 s |
+| Execution via opencode CLI (free models) | 30-180 s |
+| Full routed request (decision + execution + footer) | typically 1-4 min |
+| `basal-calibrate` fit, 45 labelled decisions | ~30 min |
+| GEPA micro-iteration (6-task seed eval + 1 reflection) | ~10-15 min |
+
+Times scale with free RAM: ollama keeps the 1.7 GB model loaded (~1.1 GB RSS); when the system swaps
+hard, a single decision can reach 2-3 minutes and long-running loops may get OOM-killed — the
+research harness and GEPA both resume from their checkpoints (`progress_*.json`, `gepa_state.bin`).
+On a quiet machine or with an NVIDIA GPU, decision latency drops by an order of magnitude.
 
 ## Status
 
