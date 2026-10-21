@@ -184,6 +184,25 @@ more than 0.05; `--revert <cycle>` undoes any change manually.
 ~/basal-env/bin/python opt/abstral_loop.py --revert 2
 ```
 
+## 6b. Hermes sandbox — the execution agent (opt/hermes_sandbox/)
+
+Experimental pipelines (ABSTRAL, the LangGraph graph) never run the user's opencode installation as an
+agent. Instead they run the **isolated Hermes sandbox**: its own `HERMES_HOME` (no access to your Hermes
+installation, sessions or credentials), `--ignore-user-config --ignore-rules --safe-mode`, a fresh
+scratch working directory per task, hard limits (`agent.max_turns: 4`, `agent.run_budget_seconds: 600`)
+and a switchable model through routerd:
+
+- **auto** (default) — basal routes the model for every task the agent works on
+- any registry key — the agent works on that one model (`router/<key>`, no re-routing recursion)
+- the **panel settings** ("hermes agent model") set the default; the CLI overrides per run
+
+```bash
+~/basal-env/bin/python router.py hermes "task"                    # auto / panel default
+~/basal-env/bin/python router.py hermes deepseek-flash "task"     # switch to one model
+```
+
+The opencode runner stays only for user-driven routing (Kilo/opencode clients through routerd).
+
 ## 7. Model discovery — the self-updating registry (opt/discovery.py)
 
 Sources: models.dev (the master catalog; free = zero cost), the live `opencode models` list, the

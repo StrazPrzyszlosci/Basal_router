@@ -174,10 +174,16 @@ def load_providers():
     return {}
 
 
+def resolve_hermes_model(requested=None):
+    """Model the sandbox agent works on: explicit request > the panel setting > auto (basal routes per task)."""
+    return requested or load_settings().get("hermes_model") or "auto"
+
+
 def execute_hermes(model_key, task, timeout_s=600):
     """Run a task through the isolated Hermes agent: its own HERMES_HOME (no access to the user's
     Hermes installation, config or rules), a fresh scratch working directory, a hard turn and
-    wall-clock budget, and one forced model via routerd (no re-routing recursion)."""
+    wall-clock budget. model_key may be "auto" — then basal routes the model per task."""
+    model_key = model_key or "auto"
     scratch = HERMES_SANDBOX.parent / "scratch" / time.strftime("%Y%m%d-%H%M%S")
     scratch.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "HERMES_HOME": str(HERMES_SANDBOX)}
@@ -259,10 +265,20 @@ def main():
         for model in load_registry()["models"]:
             mark = "" if model["key"] in usable else "   [needs a key — inactive]"
             print(f"{model['key']:20} {model['id']}{mark}")
+    elif command == "hermes":
+        rest = sys.argv[2:]
+        keys = {m["key"] for m in load_registry()["models"]}
+        requested = rest[0] if rest and (rest[0] in keys or rest[0] == "auto") else None
+        task = " ".join(rest[1:] if requested else rest).strip()
+        if not task:
+            raise SystemExit('usage: router.py hermes [model_key|auto] "task"')
+        model = resolve_hermes_model(requested)
+        print(json.dumps({"model": model, "answer": execute_hermes(model, task)},
+                         ensure_ascii=False, indent=2))
     elif command == "annotate":
         annotate()
     else:
-        raise SystemExit("commands: route | models | annotate")
+        raise SystemExit("commands: route | models | annotate | hermes")
 
 
 if __name__ == "__main__":

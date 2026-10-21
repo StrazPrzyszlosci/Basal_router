@@ -52,6 +52,7 @@ request — no restart. The registry holds max 20 options (an ollama-mode limit)
 </div>
 <div class="row" style="margin-top:10px">
   <label class="opt">default model <select id="s-default" style="max-width:220px"></select></label>
+  <label class="opt">hermes agent model <select id="s-hermes" style="max-width:220px"></select></label>
   <label class="opt">confidence floor <input type="number" id="s-floor" step="0.05" min="0" max="1" style="width:90px" placeholder="0.55"></label>
   <label class="opt">exec timeout [s] <input type="number" id="s-timeout" step="30" min="30" max="3600" style="width:100px"></label>
   <label class="opt">state language <select id="s-lang"><option value="pl">pl</option><option value="en">en</option></select></label>
@@ -184,6 +185,9 @@ async function loadRegistry() {
     const sel = document.getElementById("s-default");
     sel.innerHTML = '<option value="">(models.json default)</option>' +
       r.models.map(m => `<option value="${m.key}">${m.key}</option>`).join("");
+    const hsel = document.getElementById("s-hermes");
+    hsel.innerHTML = '<option value="auto">auto (basal routes per task)</option>' +
+      r.models.map(m => `<option value="${m.key}">${m.key}</option>`).join("");
   } catch (e) { document.getElementById("registry-meta").textContent = String(e); }
 }
 async function removeModel(key) {
@@ -205,6 +209,8 @@ async function loadSettings() {
   document.getElementById("s-instructions").value = s.routing_instructions || "";
   const sel = document.getElementById("s-default");
   if (sel.options.length) sel.value = s.default_model || "";
+  const hsel = document.getElementById("s-hermes");
+  if (hsel.options.length) hsel.value = s.hermes_model || "auto";
 }
 async function saveSettings() {
   const st = document.getElementById("settings-status");
@@ -217,6 +223,7 @@ async function saveSettings() {
                   model_autorefresh: document.getElementById("s-autorefresh").checked,
                   state_lang: document.getElementById("s-lang").value,
                   default_model: document.getElementById("s-default").value,
+                  hermes_model: document.getElementById("s-hermes").value,
                   routing_instructions: document.getElementById("s-instructions").value};
     if (!isNaN(floor)) body.confidence_floor = floor;
     if (!isNaN(timeout)) body.exec_timeout_s = timeout;
