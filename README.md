@@ -100,7 +100,7 @@ gitignored).
 | `kilo.json` | Kilo Code integration: `router/auto` provider + MCP + tool permissions |
 | `.kilo/command/route.md` | the `/route <task>` command |
 | `experiments/` | configuration research; results in `experiments/results/` and `RESULTS.md` |
-| `opt/` | optimisation stack: GEPA harness, ABSTRAL-style architecture loop (arXiv:2603.22791), OpenEvolve scaffold, self-updating model discovery |
+| `opt/` | optimisation stack: GEPA harness, ABSTRAL-style architecture loop (arXiv:2603.22791), OpenEvolve scaffold, self-updating model discovery, benchmark enrichment |
 | `RESULTS.md` | research results |
 | `USAGE.md` | operations guide: services, clients, panel, research, calibration, optimisation |
 | `ROADMAP.md` | architecture, phases (calibration, GEPA, OpenEvolve, LangGraph), vision status |

@@ -38,6 +38,7 @@ CONFIGS = {
     "C3-hybrid-cards": {"registry": "models.hybrid.json", "label": "hybrid (role + facts)"},
     "C4-manual-v2-cards": {"registry": "models.manual-v2.json", "label": "manual-v2 cards (Polish)"},
     "C5-english-cards": {"registry": "models.json", "label": "manual-v2 cards (English, production)"},
+    "C6-benchmark-cards": {"registry": "models.json", "label": "cards with real benchmark scores"},
 }
 
 

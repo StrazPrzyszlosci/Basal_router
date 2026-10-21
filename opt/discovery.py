@@ -276,6 +276,11 @@ def refresh():
     result["applied"] = summary
     LAST_SCAN.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False), flush=True)
+    try:
+        subprocess.run([sys.executable, str(ROOT / "opt" / "benchmarks.py"), "enrich"],
+                       capture_output=True, text=True, timeout=180)
+    except Exception as exc:
+        print(f"[refresh] benchmark enrich failed: {exc}", flush=True)
     return result
 
 

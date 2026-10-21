@@ -6,7 +6,7 @@
       "key": "glm-flash",
       "id": "opencode/glm-5.3-flash-free",
       "name": "GLM-5.3-Flash Free",
-      "card": "Fast free general-purpose model: routine tasks, code fixes, summaries, good Polish text. Sensible default.",
+      "card": "Fast free general-purpose model: routine tasks, code fixes, summaries, good Polish text. Sensible default. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 42/100; coding 72/100; agentic 51/100; 3d elo 1316; uicomponent elo 1316.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -34,7 +34,7 @@
       "key": "deepseek-flash",
       "id": "opencode/deepseek-v4.1-flash-free",
       "name": "DeepSeek V4.1 Flash Free",
-      "card": "Programming and code engineering: writing, analysis, debugging, refactoring, tests. Fast and cheap.",
+      "card": "Programming and code engineering: writing, analysis, debugging, refactoring, tests. Fast and cheap. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 25/100.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -60,7 +60,7 @@
       "key": "nemotron-ultra",
       "id": "opencode/nemotron-3-ultra-free",
       "name": "Nemotron 3 Ultra Free",
-      "card": "Strongest free model: hard reasoning, system design, planning, analysis. Slowest - only for genuinely hard tasks.",
+      "card": "Strongest free model: hard reasoning, system design, planning, analysis. Slowest - only for genuinely hard tasks. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 23/100; coding 49/100; agentic 20/100; codecategories elo 1147; website elo 1145.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -84,7 +84,7 @@
       "key": "nemotron-lightning",
       "id": "opencode/nemotron-3.5-lightning-free",
       "name": "Nemotron 3.5 Lightning Free",
-      "card": "Fast everyday tasks that need more quality than the smallest models: high throughput, short contexts.",
+      "card": "Fast everyday tasks that need more quality than the smallest models: high throughput, short contexts. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 13/100; coding 27/100; agentic 4/100.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -109,7 +109,7 @@
       "key": "nemotron-vl",
       "id": "opencode/nemotron-3.5-super-vl-free",
       "name": "Nemotron 3.5 Super VL Free",
-      "card": "Images and visual documents: screenshots, scans, charts, OCR, describing photos (vision).",
+      "card": "Images and visual documents: screenshots, scans, charts, OCR, describing photos (vision). Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 26/100; website elo 1172; codecategories elo 1155.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -159,7 +159,7 @@
       "key": "minimax-flash",
       "id": "opencode/minimax-m3.1-flash-free",
       "name": "MiniMax M3.1 Flash Free",
-      "card": "Frontier multimodal coding model with tunable thinking depth: for tasks that need higher quality.",
+      "card": "Frontier multimodal coding model with tunable thinking depth: for tasks that need higher quality. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 43/100.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -185,7 +185,7 @@
       "key": "mimo-flash",
       "id": "opencode/mimo-v2.6-flash-free",
       "name": "MiMo-V2.6-Flash Free",
-      "card": "Fastest flash class: short answers, simple automations, light text tasks.",
+      "card": "Fastest flash class: short answers, simple automations, light text tasks. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 38/100.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -211,7 +211,7 @@
       "key": "beam",
       "id": "opencode/beam-free",
       "name": "Beam Free",
-      "card": "Sparse MoE (23B active params) for reasoning and agentic workflows: complex analysis and tool use.",
+      "card": "Sparse MoE (23B active params) for reasoning and agentic workflows: complex analysis and tool use. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): website elo 1253; gamedev elo 1233.",
       "runner": "opencode",
       "tags": [
         "free",
@@ -313,7 +313,7 @@
       "key": "nim-glm-flash",
       "id": "nvidia/z-ai/glm-5.3-flash",
       "name": "GLM-5.3-Flash",
-      "card": "Same profile as the free GLM Flash, via your own NIM key: stable, for tasks that cannot wait for the free endpoint.",
+      "card": "Same profile as the free GLM Flash, via your own NIM key: stable, for tasks that cannot wait for the free endpoint. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 42/100; coding 72/100; agentic 51/100; 3d elo 1316; uicomponent elo 1316.",
       "runner": "direct",
       "provider": "nvidia",
       "model": "z-ai/glm-5.3-flash",
@@ -344,7 +344,7 @@
       "key": "nim-deepseek-flash",
       "id": "nvidia/deepseek-ai/deepseek-v4.1-flash",
       "name": "DeepSeek V4.1 Flash",
-      "card": "Fast coding via your own NIM key: when the free opencode endpoint runs out.",
+      "card": "Fast coding via your own NIM key: when the free opencode endpoint runs out. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 25/100.",
       "runner": "direct",
       "provider": "nvidia",
       "model": "deepseek-ai/deepseek-v4.1-flash",
@@ -386,7 +386,7 @@
       "key": "google-gemma-4-31b-it-free",
       "id": "openrouter/google/gemma-4-31b-it:free",
       "name": "google/gemma-4-31b-it:free",
-      "card": "Fast free model for open self-hosted chat and reasoning: long-document analysis (262k context), tool calling, image understanding. Not for image generation.",
+      "card": "Fast free model for open self-hosted chat and reasoning: long-document analysis (262k context), tool calling, image understanding. Not for image generation. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 15/100; coding 43/100; agentic 4/100.",
       "runner": "opencode",
       "tags": [
         "opencode",
@@ -400,7 +400,7 @@
       "key": "thinkingmachines-inkling-free",
       "id": "openrouter/thinkingmachines/inkling:free",
       "name": "thinkingmachines/inkling:free",
-      "card": "Fast free model for multimodal deep reasoning: visual analysis, planning, tool/function calling, long-context work (1M in / 256K out). Not for latency-critical or simple-chat tasks.",
+      "card": "Fast free model for multimodal deep reasoning: visual analysis, planning, tool/function calling, long-context work (1M in / 256K out). Not for latency-critical or simple-chat tasks. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 25/100; coding 52/100; agentic 22/100; website elo 1224; codecategories elo 1206.",
       "runner": "opencode",
       "tags": [
         "opencode",
@@ -428,7 +428,7 @@
       "key": "nvidia-nemotron-3-nano-omni-30b-",
       "id": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
       "name": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-      "card": "Free omni reasoning model for tasks needing deliberate thinking plus multimodality: hard math and logic, agentic tool calling, image and audio understanding with long 256k context. Not for latency-critical chat or high-volume classification where visible reasoning wastes tokens.",
+      "card": "Free omni reasoning model for tasks needing deliberate thinking plus multimodality: hard math and logic, agentic tool calling, image and audio understanding with long 256k context. Not for latency-critical chat or high-volume classification where visible reasoning wastes tokens. Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 10/100; coding 14/100.",
       "runner": "opencode",
       "tags": [
         "opencode",
