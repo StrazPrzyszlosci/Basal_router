@@ -1,7 +1,7 @@
 {
-  "fetched": "2026-10-21 23:47",
+  "fetched": "2026-10-22 00:22",
   "source": "openrouter.ai/api/v1/models (benchmarks field)",
-  "models_with_benchmarks": 304,
+  "models_with_benchmarks": 303,
   "mapping": {
     "glm-flash": {
       "or_id": "z-ai/glm-5.3-flash",

@@ -1,24 +1,18 @@
 {
-  "ts": "2026-10-21T18:22:50",
+  "ts": "2026-10-22T02:26:11",
   "sources": {
-    "opencode": 436,
-    "openrouter_free": 20,
+    "opencode": 438,
+    "openrouter_free": 21,
     "keyed_provider_models": 0,
     "modelsdev_providers": 232
   },
-  "reachable": 30,
-  "candidates": 14,
+  "reachable": 32,
+  "candidates": 2,
   "vanished": [],
   "proposal": {
     "add": [],
     "drop": [],
-    "reason": "No vanished entries to drop and zero additions allowed per constraints"
+    "reason": "test"
   },
-  "raw_proposal": "{\n  \"add\": [],\n  \"drop\": [],\n  \"reason\": \"No vanished entries to drop and zero additions allowed per constraints\"\n}",
-  "applied": {
-    "added": [],
-    "dropped": [],
-    "reason": "No vanished entries to drop and zero additions allowed per constraints",
-    "registry_size": 20
-  }
+  "raw_proposal": "{\"add\": [], \"drop\": [], \"reason\": \"test\"}"
 }

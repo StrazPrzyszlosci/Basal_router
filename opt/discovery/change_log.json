@@ -36,5 +36,181 @@
     "dropped": [],
     "dropped_entries": [],
     "reason": "No vanished entries to drop and zero additions allowed per constraints"
+  },
+  {
+    "n": 5,
+    "ts": "2026-10-22T00:22:17",
+    "added": [],
+    "dropped": [],
+    "dropped_entries": [],
+    "reason": "Failed cron scan: the Hermes agent call was routed to an unauthed openrouter/* entry and died on 401 'User not found' — the bug that triggered the executability filter and the n=6 purge."
+  },
+  {
+    "n": 6,
+    "ts": "2026-10-22T01:56:41",
+    "added": [],
+    "dropped": [
+      "longcat",
+      "or-free",
+      "qwen-local",
+      "google-gemma-4-31b-it-free",
+      "thinkingmachines-inkling-free",
+      "xingchen-agi-xing4-0-29b-a4b-fre",
+      "nvidia-nemotron-3-nano-omni-30b-",
+      "nvidia-nemotron-3-5-content-safe"
+    ],
+    "dropped_entries": [
+      {
+        "key": "longcat",
+        "id": "opencode/longcat-2.5-preview-free",
+        "name": "LongCat 2.5 Preview Free",
+        "card": "Very long context: analysing long documents, logs, many files at once.",
+        "runner": "opencode",
+        "tags": [
+          "free",
+          "long-context"
+        ],
+        "meta": {
+          "context": 1000000,
+          "output": 131072,
+          "cost_input": 0,
+          "cost_output": 0,
+          "capabilities": [
+            "deep reasoning",
+            "tools (function calling)",
+            "images (vision)"
+          ],
+          "canonical_model_id": "meituan/longcat-2.5-preview",
+          "description_full": "Meituan's multimodal reasoning model for coding and agent tasks, with image understanding and a 1M-token context window",
+          "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
+          "display_benchmarks": "",
+          "display_speed": ""
+        }
+      },
+      {
+        "key": "or-free",
+        "id": "openrouter/openrouter/free",
+        "name": "Free Models Router",
+        "card": "Automatic choice of a currently available free model via OpenRouter; when no clear favourite exists.",
+        "runner": "opencode",
+        "tags": [
+          "free",
+          "fallback"
+        ],
+        "meta": {
+          "context": 200000,
+          "output": 8000,
+          "cost_input": 0,
+          "cost_output": 0,
+          "capabilities": [
+            "deep reasoning",
+            "tools (function calling)",
+            "images (vision)",
+            "structured outputs (JSON)"
+          ],
+          "canonical_model_id": null,
+          "description_full": "Multimodal reasoning model for visual analysis, planning, and tool use",
+          "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
+          "display_benchmarks": "",
+          "display_speed": ""
+        }
+      },
+      {
+        "key": "qwen-local",
+        "id": "ollama/qwen3.8:27b",
+        "name": "Qwen 3.8 27B (Ollama, local)",
+        "card": "Runs offline on the laptop, fully private. Short 8k context, slow on this machine. Note: must be pulled into Ollama first.",
+        "runner": "opencode",
+        "tags": [
+          "local"
+        ],
+        "meta": {
+          "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
+          "display_benchmarks": "",
+          "display_speed": ""
+        }
+      },
+      {
+        "key": "google-gemma-4-31b-it-free",
+        "id": "openrouter/google/gemma-4-31b-it:free",
+        "name": "google/gemma-4-31b-it:free",
+        "card": "Fast free model for open self-hosted chat and reasoning: long-document analysis (262k context), tool calling, image understanding. Not for image generation.",
+        "runner": "opencode",
+        "tags": [
+          "opencode",
+          "discovered"
+        ],
+        "meta": {
+          "card_source": "discovery (free-model written card)",
+          "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 15/100; coding 43/100; agentic 4/100.",
+          "display_speed": ""
+        }
+      },
+      {
+        "key": "thinkingmachines-inkling-free",
+        "id": "openrouter/thinkingmachines/inkling:free",
+        "name": "thinkingmachines/inkling:free",
+        "card": "Fast free model for multimodal deep reasoning: visual analysis, planning, tool/function calling, long-context work (1M in / 256K out). Not for latency-critical or simple-chat tasks.",
+        "runner": "opencode",
+        "tags": [
+          "opencode",
+          "discovered"
+        ],
+        "meta": {
+          "card_source": "discovery (free-model written card)",
+          "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 25/100; coding 52/100; agentic 22/100; website elo 1224; codecategories elo 1206.",
+          "display_speed": ""
+        }
+      },
+      {
+        "key": "xingchen-agi-xing4-0-29b-a4b-fre",
+        "id": "openrouter/xingchen-agi/xing4.0-29b-a4b:free",
+        "name": "xingchen-agi/xing4.0-29b-a4b:free",
+        "card": "Fast free model for deep-reasoning and tool-using (function-calling) tasks: long-context chat up to 262k tokens, agent prototypes, demos, cost-sensitive workloads. Not for high-volume production serving.",
+        "runner": "opencode",
+        "tags": [
+          "opencode",
+          "discovered"
+        ],
+        "meta": {
+          "card_source": "discovery (free-model written card)",
+          "display_benchmarks": "",
+          "display_speed": ""
+        }
+      },
+      {
+        "key": "nvidia-nemotron-3-nano-omni-30b-",
+        "id": "openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "name": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "card": "Free omni reasoning model for tasks needing deliberate thinking plus multimodality: hard math and logic, agentic tool calling, image and audio understanding with long 256k context. Not for latency-critical chat or high-volume classification where visible reasoning wastes tokens.",
+        "runner": "opencode",
+        "tags": [
+          "opencode",
+          "discovered"
+        ],
+        "meta": {
+          "card_source": "discovery (free-model written card)",
+          "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 10/100; coding 14/100.",
+          "display_speed": ""
+        }
+      },
+      {
+        "key": "nvidia-nemotron-3-5-content-safe",
+        "id": "openrouter/nvidia/nemotron-3.5-content-safety:free",
+        "name": "nvidia/nemotron-3.5-content-safety:free",
+        "card": "Fast free safety model for policy screening: content moderation, risk-aware routing, image-aware abuse checks. Not for general chat, creative writing, or long-form generation.",
+        "runner": "opencode",
+        "tags": [
+          "opencode",
+          "discovered"
+        ],
+        "meta": {
+          "card_source": "discovery (free-model written card)",
+          "display_benchmarks": "",
+          "display_speed": ""
+        }
+      }
+    ],
+    "reason": "Post-mortem purge: entries added from catalog presence without an execution check. openrouter/* needs opencode openrouter auth (401 'User not found'); openrouter/free and ollama/qwen3.8:27b vanished from the opencode catalog; longcat endpoint unavailable. Discovery now filters by executable path."
   }
 ]
