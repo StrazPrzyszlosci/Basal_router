@@ -41,15 +41,22 @@ KNOWN_FREE = {"opencode/big-pickle"}
 
 def llm(prompt):
     """Registry-update reasoning runs on the sandboxed Hermes agent — its one job in this repo.
-    A plain routerd call stays as the fallback if the agent is unavailable."""
+    A plain routerd call stays as the fallback if the agent is unavailable, errors out, or
+    returns an opencode error event instead of text."""
+    text = ""
     try:
         text = router.execute_hermes(router.load_settings().get("hermes_model") or "auto", prompt, 600)
     except Exception:
-        response = httpx.post(ROUTERD,
-                              json={"model": "auto", "messages": [{"role": "user", "content": prompt}]},
-                              timeout=600)
-        response.raise_for_status()
-        text = response.json()["choices"][0]["message"]["content"].strip()
+        text = ""
+    if not text.strip() or '"type":"error"' in text:
+        try:
+            response = httpx.post(ROUTERD,
+                                  json={"model": "auto", "messages": [{"role": "user", "content": prompt}]},
+                                  timeout=600)
+            response.raise_for_status()
+            text = response.json()["choices"][0]["message"]["content"].strip()
+        except Exception:
+            pass
     marker = "\n---\n[router]"
     if marker in text:
         text = text.split(marker)[0].strip()
@@ -111,6 +118,25 @@ def fetch_keyed_provider_models():
     return out
 
 
+def opencode_auth_providers():
+    """Providers credentialed inside opencode's own auth store. Models of other providers
+    still appear in the `opencode models` catalog but fail with 401 when executed."""
+    try:
+        auth = json.loads(Path.home().joinpath(".local/share/opencode/auth.json").read_text())
+        return {p for p, v in auth.items()
+                if isinstance(v, dict) and (v.get("key") or v.get("access"))}
+    except Exception:
+        return set()
+
+
+def ollama_local_models():
+    try:
+        tags = httpx.get("http://127.0.0.1:11434/api/tags", timeout=10).json()
+        return {m.get("name", "").split(":")[0] for m in tags.get("models", [])}
+    except Exception:
+        return set()
+
+
 def dev_entry(dev, entry_id):
     provider, _, model_id = entry_id.partition("/")
     models = (dev.get(provider) or {}).get("models") or {}
@@ -168,16 +194,37 @@ def scan():
             reachable.setdefault(mid, {"name": mid, "description": ""})
     reachable.update(openrouter_free)
     reachable.update(keyed)
-    candidates = {mid: info for mid, info in reachable.items() if mid not in by_id}
+
+    oc_auth = opencode_auth_providers()
+    ollama_local = ollama_local_models()
+    keyed_providers = {p for p, c in router.load_providers().items()
+                       if not p.startswith("_") and c.get("apiKey")}
+
+    def executable(mid):
+        """Catalog presence is not reachability: a model only counts when its execution
+        path is credentialed (opencode gateway, opencode-stored auth, or our own key)."""
+        provider, _, model_id = mid.partition("/")
+        if provider == "opencode":
+            return True
+        if provider == "ollama":
+            return model_id.split(":")[0] in ollama_local
+        return provider in oc_auth or provider in keyed_providers
+
+    candidates = {mid: info for mid, info in reachable.items()
+                  if mid not in by_id and executable(mid)}
 
     vanished = []
     for m in registry["models"]:
         if m.get("runner", "opencode") != "opencode":
             continue
         provider = m["id"].partition("/")[0]
-        if provider == "opencode" and m["id"] not in opencode_listed:
+        if not executable(m["id"]):
+            vanished.append(m["key"])
+        elif provider == "opencode" and m["id"] not in opencode_listed:
             vanished.append(m["key"])
         elif provider == "openrouter" and m["id"] not in openrouter_free:
+            vanished.append(m["key"])
+        elif provider == "ollama" and m["id"] not in opencode_listed:
             vanished.append(m["key"])
 
     slots = REGISTRY_CAP - len(registry["models"])
@@ -191,8 +238,10 @@ def scan():
                   f"now {len(registry['models'])}, {slots} free slots).\n"
                   f"Current registry:\n{current}\n\n"
                   f"Newly reachable free models:\n{listing or '(none)'}\n\n"
-                  f"Entries that vanished from their source: {vanished or 'none'}\n"
-                  "Known registry gap: no creative-writing model. Pick at most "
+                  f"Entries that vanished from their source or lost a working execution path: "
+                  f"{vanished or 'none'}\n"
+                  "Entries must never sit dead in the registry: they poison routing decisions. "
+                  "Pick at most "
                   f"{max(slots, 0)} additions that fill missing specialisations, and drop only "
                   "vanished entries (never the default model).\n"
                   'Output STRICT JSON: {"add": [model ids], "drop": [registry keys], '
@@ -202,6 +251,9 @@ def scan():
             proposal = parse_json(raw) or proposal
         except Exception:
             raw = ""
+    if not proposal.get("add") and not proposal.get("drop") and not proposal.get("reason"):
+        proposal["reason"] = ("agent produced no parseable proposal — no changes applied"
+                              if (candidates or vanished) else "")
     proposal["add"] = [mid for mid in proposal.get("add", []) if mid in candidates][:max(slots, 0)]
     default_key = registry.get("default_model")
     proposal["drop"] = [k for k in proposal.get("drop", []) if k in vanished and k != default_key]
@@ -250,8 +302,11 @@ def apply_proposal(result):
 
     drop_set = set(result["proposal"]["drop"])
     dropped_entries = [m for m in registry["models"] if m["key"] in drop_set]
-    registry["models"] = [m for m in registry["models"] if m["key"] not in drop_set]
     dropped = [m["key"] for m in dropped_entries]
+    if not added and not dropped and not result["proposal"].get("reason"):
+        return {"added": [], "dropped": [], "reason": "",
+                "registry_size": len(registry["models"])}
+    registry["models"] = [m for m in registry["models"] if m["key"] not in drop_set]
     save_registry(registry)
 
     changelog = []
@@ -261,7 +316,7 @@ def apply_proposal(result):
                       "added": added, "dropped": dropped,
                       "dropped_entries": dropped_entries,
                       "reason": result["proposal"].get("reason", "")})
-    CHANGELOG.write_text(json.dumps(changelog, ensure_ascii=False, indent=2), encoding="utf-8")
+    CHANGELOG.write_text(json.dumps(changelog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return {"added": added, "dropped": dropped,
             "reason": result["proposal"].get("reason", ""),
             "registry_size": len(registry["models"])}
