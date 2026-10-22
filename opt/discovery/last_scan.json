@@ -1,5 +1,5 @@
 {
-  "ts": "2026-10-22T02:26:11",
+  "ts": "2026-10-22T02:42:37",
   "sources": {
     "opencode": 438,
     "openrouter_free": 21,
@@ -10,9 +10,21 @@
   "candidates": 2,
   "vanished": [],
   "proposal": {
-    "add": [],
+    "add": [
+      "opencode/flint-40b-free",
+      "opencode/longcat-2.5-preview-free"
+    ],
     "drop": [],
-    "reason": "test"
+    "reason": "Both candidates are live and active in the opencode catalog (free, distinct families), the registry has 8 open slots consuming both, and nothing vanished, so there are no drop candidates."
   },
-  "raw_proposal": "{\"add\": [], \"drop\": [], \"reason\": \"test\"}"
+  "raw_proposal": "{\"add\": [\"opencode/flint-40b-free\", \"opencode/longcat-2.5-preview-free\"], \"drop\": [], \"reason\": \"Both candidates are live and active in the opencode catalog (free, distinct families), the registry has 8 open slots consuming both, and nothing vanished, so there are no drop candidates.\"}",
+  "applied": {
+    "added": [
+      "flint-40b-free",
+      "longcat-2-5-preview-free"
+    ],
+    "dropped": [],
+    "reason": "Both candidates are live and active in the opencode catalog (free, distinct families), the registry has 8 open slots consuming both, and nothing vanished, so there are no drop candidates.",
+    "registry_size": 14
+  }
 }

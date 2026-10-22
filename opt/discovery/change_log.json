@@ -212,5 +212,16 @@
       }
     ],
     "reason": "Post-mortem purge: entries added from catalog presence without an execution check. openrouter/* needs opencode openrouter auth (401 'User not found'); openrouter/free and ollama/qwen3.8:27b vanished from the opencode catalog; longcat endpoint unavailable. Discovery now filters by executable path."
+  },
+  {
+    "n": 7,
+    "ts": "2026-10-22T02:48:34",
+    "added": [
+      "flint-40b-free",
+      "longcat-2-5-preview-free"
+    ],
+    "dropped": [],
+    "dropped_entries": [],
+    "reason": "Both candidates are live and active in the opencode catalog (free, distinct families), the registry has 8 open slots consuming both, and nothing vanished, so there are no drop candidates."
   }
 ]
