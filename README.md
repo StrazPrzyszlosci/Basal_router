@@ -17,11 +17,15 @@ your own calibration (`basal-calibrate`) and for card optimisation (GEPA).
 ```
 apps (Kilo Code / opencode / hermes / any OpenAI-compatible client)
         │
-   http://127.0.0.1:8788/v1   (routerd.py, model "auto")
-        │                       ├── fallback: next models from basal's ranking
-        ├── basal-serve :8000  (choice decisions, calibration, /v1/systemone)
-        │       └── ollama :11434 (basal-2.0-mini 1.5B Q8_0)
-        └── execution: opencode run -m <model> | providers.json (NIM etc., keys kept locally)
+   http://127.0.0.1:8788/v1   (routerd.py, model "auto" | "router/swarm" | "router/ultra-swarm")
+         │                       ├── fallback: next models from basal's ranking
+         ├── basal-serve :8000  (choice decisions, calibration, /v1/systemone)
+         │       └── ollama :11434 (basal-2.0-mini 1.5B Q8_0)
+         └── execution: opencode run -m <model> | providers.json (NIM etc., keys kept locally)
+
+swarm / ultra-swarm (swarm.py): basal picks every role itself —
+   swarm:    decomposer → subagents (picked per subtask, RPM-aware, parallel) → synthesizer
+   ultra:    planner → critic (revision round) → swarm manager → subagents → synthesizer
 ```
 
 ## How it works (request lifecycle)
@@ -56,6 +60,14 @@ apps (Kilo Code / opencode / hermes / any OpenAI-compatible client)
 10. **Response** — OpenAI format (streaming emulated as a single chunk) plus the `router` field:
     `chosen_by_basal`, `confidence`, `deferred`, `executed_model`, `fallback_errors`.
 
+Request lifecycle for the swarm models (`router/swarm`, `router/ultra-swarm`): basal first picks
+the model that decomposes the task (ultra: the planner, then a critic that can force one revision
+round, then the swarm manager that turns the approved plan into assignments); for **each** written
+subtask basal again picks the subagent — but only among models whose provider still has RPM
+headroom and is not in a 429 cooldown (`opt/rpm.py`, limits in settings, ollama unlimited) —
+subagents run in parallel (default 2 workers) and a basal-picked synthesizer merges the results.
+The panel gets the full decision trace; the answer footer lists which model handled which role.
+
 ## Management panel
 
 Open http://127.0.0.1:8788/ — the root redirects to the panel. Everything applies from the next
@@ -86,10 +98,12 @@ gitignored).
 
 | File | Role |
 |---|---|
-| `routerd.py` | OpenAI-compatible endpoint (`/v1/chat/completions`, `/v1/models`); routing + fallback |
+| `routerd.py` | OpenAI-compatible endpoint (`/v1/chat/completions`, `/v1/models`); routing + fallback; virtual models `router/swarm`, `router/ultra-swarm` |
 | `panel.html`, `/panel` | web panel for provider keys: http://127.0.0.1:8788/panel (save, masking, key test) |
 | `router.py` | decisions via basal, execution, decision log, CLI (`route`/`models`/`annotate`) |
+| `swarm.py` | swarm orchestration: basal delegates every role (decompose/plan/critique/manage/execute/synthesize), RPM-aware subagent assignment, parallel subtasks |
 | `router_mcp.py` | MCP server `kilo-router` (recommend/pool/route/models/run) |
+| `opt/rpm.py` | per-provider RPM windows + 429/quota cooldowns (state in `opt/rpm/state.json`, gitignored) |
 | `models.json` | production registry: English cards (role-based), runners; max 20 options |
 | `models.manual.json` | hand-written cards v1 — research baseline (C1) |
 | `models.manual-v2.json` | manual-v2 cards, Polish — research baseline (C4) |

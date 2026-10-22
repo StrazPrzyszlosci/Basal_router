@@ -1,5 +1,5 @@
 {
-  "ts": "2026-10-22T02:26:11",
+  "ts": "2026-10-22T06:17:03",
   "sources": {
     "opencode": 438,
     "openrouter_free": 21,
@@ -7,12 +7,18 @@
     "modelsdev_providers": 232
   },
   "reachable": 32,
-  "candidates": 2,
+  "candidates": 0,
   "vanished": [],
   "proposal": {
     "add": [],
     "drop": [],
-    "reason": "test"
+    "reason": ""
   },
-  "raw_proposal": "{\"add\": [], \"drop\": [], \"reason\": \"test\"}"
+  "raw_proposal": "",
+  "applied": {
+    "added": [],
+    "dropped": [],
+    "reason": "",
+    "registry_size": 14
+  }
 }

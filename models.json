@@ -29,7 +29,7 @@
         "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
         "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 42/100; coding 72/100; agentic 51/100; 3d elo 1316; uicomponent elo 1316.",
-        "display_speed": ""
+        "display_speed": "Speed (measured passively): median 10.1 s/call over 10 measured calls, ok 100%; tok/s not reported by this runner."
       }
     },
     {
@@ -136,7 +136,7 @@
         "canonical_model_id": "nvidia/nemotron-3.5-super-vl-120b-a12b",
         "description_full": "NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use",
         "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
-        "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 26/100; website elo 1172; codecategories elo 1155.",
+        "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 26/100; website elo 1173; codecategories elo 1156.",
         "display_speed": ""
       }
     },
@@ -193,7 +193,7 @@
         "description_full": "MiMo Flash model for multimodal coding agents and long-context automation",
         "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
         "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 38/100.",
-        "display_speed": "Speed (measured passively): median 8.6 s/call over 2 measured calls, ok 100%; tok/s not reported by this runner."
+        "display_speed": "Speed (measured passively): median 11.1 s/call over 5 measured calls, ok 100%; tok/s not reported by this runner."
       }
     },
     {
@@ -219,7 +219,7 @@
         "canonical_model_id": "reflection/beam-1.0-501b-a23b",
         "description_full": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
         "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
-        "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): website elo 1253; gamedev elo 1233.",
+        "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): website elo 1250; gamedev elo 1224.",
         "display_speed": ""
       }
     },
@@ -339,6 +339,38 @@
         "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
         "id_source": "kilo models nvidia (7.8.15)",
         "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 25/100.",
+        "display_speed": ""
+      }
+    },
+    {
+      "key": "flint-40b-free",
+      "id": "opencode/flint-40b-free",
+      "name": "flint-40b-free",
+      "card": "Fast free model for coding agents: code generation, tool calling, agentic workflows; MoE with 2.5B active of 40B params and 256k context. Not for multimodal input — text-only.",
+      "runner": "opencode",
+      "tags": [
+        "opencode",
+        "discovered"
+      ],
+      "meta": {
+        "card_source": "discovery (free-model written card)",
+        "display_benchmarks": "",
+        "display_speed": ""
+      }
+    },
+    {
+      "key": "longcat-2-5-preview-free",
+      "id": "opencode/longcat-2.5-preview-free",
+      "name": "longcat-2.5-preview-free",
+      "card": "Free multimodal reasoning model for coding, agent tasks, and long documents: deep reasoning, function calling, image understanding, 1M-token context. Not for low-latency, lightweight prompts.",
+      "runner": "opencode",
+      "tags": [
+        "opencode",
+        "discovered"
+      ],
+      "meta": {
+        "card_source": "discovery (free-model written card)",
+        "display_benchmarks": "",
         "display_speed": ""
       }
     }

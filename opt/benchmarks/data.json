@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-10-22 00:22",
+  "fetched": "2026-10-22 06:17",
   "source": "openrouter.ai/api/v1/models (benchmarks field)",
   "models_with_benchmarks": 303,
   "mapping": {
@@ -41,17 +41,12 @@
     },
     "nemotron-vl": {
       "or_id": "nvidia/nemotron-3.5-super-vl:free",
-      "benchmark_line": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 26/100; website elo 1172; codecategories elo 1155.",
+      "benchmark_line": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 26/100; website elo 1173; codecategories elo 1156.",
       "aa": {
         "intelligence_index": 26.5,
         "coding_index": null,
         "agentic_index": null
       }
-    },
-    "longcat": {
-      "or_id": null,
-      "benchmark_line": "",
-      "aa": null
     },
     "minimax-flash": {
       "or_id": "minimax/minimax-m3.1-flash:free",
@@ -73,15 +68,10 @@
     },
     "beam": {
       "or_id": "reflection/beam-1.0-501b-a23b",
-      "benchmark_line": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): website elo 1253; gamedev elo 1233.",
+      "benchmark_line": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): website elo 1250; gamedev elo 1224.",
       "aa": null
     },
     "big-pickle": {
-      "or_id": null,
-      "benchmark_line": "",
-      "aa": null
-    },
-    "or-free": {
       "or_id": null,
       "benchmark_line": "",
       "aa": null
@@ -109,44 +99,12 @@
         "agentic_index": null
       }
     },
-    "qwen-local": {
+    "flint-40b-free": {
       "or_id": null,
       "benchmark_line": "",
       "aa": null
     },
-    "google-gemma-4-31b-it-free": {
-      "or_id": "google/gemma-4-31b-it:free",
-      "benchmark_line": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 15/100; coding 43/100; agentic 4/100.",
-      "aa": {
-        "intelligence_index": 14.7,
-        "coding_index": 43.4,
-        "agentic_index": 4.2
-      }
-    },
-    "thinkingmachines-inkling-free": {
-      "or_id": "thinkingmachines/inkling:free",
-      "benchmark_line": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 25/100; coding 52/100; agentic 22/100; website elo 1224; codecategories elo 1206.",
-      "aa": {
-        "intelligence_index": 25,
-        "coding_index": 52.1,
-        "agentic_index": 22.5
-      }
-    },
-    "xingchen-agi-xing4-0-29b-a4b-fre": {
-      "or_id": null,
-      "benchmark_line": "",
-      "aa": null
-    },
-    "nvidia-nemotron-3-nano-omni-30b-": {
-      "or_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-      "benchmark_line": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 10/100; coding 14/100.",
-      "aa": {
-        "intelligence_index": 10.3,
-        "coding_index": 13.8,
-        "agentic_index": null
-      }
-    },
-    "nvidia-nemotron-3-5-content-safe": {
+    "longcat-2-5-preview-free": {
       "or_id": null,
       "benchmark_line": "",
       "aa": null
