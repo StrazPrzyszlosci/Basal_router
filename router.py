@@ -16,6 +16,10 @@ try:
     import performance  # noqa: E402  (passive speed measurement; import-safe, no router import)
 except Exception:
     performance = None
+try:
+    import rpm  # noqa: E402  (per-provider RPM window + 429 cooldowns; import-safe)
+except Exception:
+    rpm = None
 REGISTRY_PATH = DIR / "models.json"
 LOG_PATH = DIR / "decisions.jsonl"
 BASAL_URL = os.environ.get("BASAL_URL", "http://127.0.0.1:8000")
@@ -126,10 +130,10 @@ def build_catalog_card(provider_name, model_id):
     return " ".join(parts)
 
 
-def route(task):
+def route(task, models=None):
     data = load_registry()
     settings = load_settings()
-    models = usable_models(data)
+    models = models if models is not None else usable_models(data)
     if not models:
         raise RuntimeError(NO_MODELS_HINT)
     by_key = {m["key"]: m for m in models}
@@ -233,6 +237,28 @@ def _parse_opencode_jsonl(stdout):
     return "\n".join(texts) if texts else None
 
 
+def _opencode_errors(stdout):
+    """Error events from an opencode JSONL stream (type "error") — a stream of only these
+    is a FAILED call, never an answer. Returns the full error objects (type, message,
+    response body) so quota vs burst rate limits can be told apart."""
+    errors = []
+    for line in str(stdout or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except Exception:
+            continue
+        if event.get("type") == "error":
+            errors.append(event.get("error") or {})
+    return errors
+
+
+def _opencode_error_text(errors):
+    return "; ".join(str(e.get("message") or e) for e in errors) or None
+
+
 def execute(model_key, task, timeout_s=600, runner=None, workdir=None, messages=None):
     """Execute a task on the chosen model. `messages` carries the original OpenAI-format messages
     (roles, history, multimodal parts) for direct providers; the CLI runner gets the full task text.
@@ -243,6 +269,8 @@ def execute(model_key, task, timeout_s=600, runner=None, workdir=None, messages=
     runner = runner or entry.get("runner", "opencode")
     started = time.time()
     ok, tokens = False, None
+    if rpm is not None and load_settings().get("respect_rate_limits", True):
+        rpm.record(rpm.provider_of(entry))
     try:
         if runner == "hermes":
             if not hermes_general_enabled():
@@ -252,26 +280,50 @@ def execute(model_key, task, timeout_s=600, runner=None, workdir=None, messages=
             ok = True
             return result
         if runner == "opencode":
-            proc = subprocess.run(
-                [OPENCODE, "run", "--format", "json", "-m", entry["id"], task],
-                capture_output=True, text=True, timeout=timeout_s, cwd=workdir,
-            )
+            try:
+                proc = subprocess.run(
+                    [OPENCODE, "run", "--format", "json", "-m", entry["id"], task],
+                    capture_output=True, text=True, timeout=timeout_s, cwd=workdir,
+                )
+            except subprocess.TimeoutExpired as exc:
+                raise RuntimeError(f"timeout after {timeout_s}s: {exc}") from exc
             parsed = _parse_opencode_jsonl(proc.stdout) if proc.stdout else None
-            if parsed or proc.stdout.strip():
+            errors = _opencode_errors(proc.stdout)
+            if rpm is not None:
+                diag = json.dumps(errors, ensure_ascii=False) if errors else ""
+                diag += proc.stderr[-500:] if proc.stderr else ""
+                if diag:
+                    if rpm.looks_quota_limited(diag):
+                        rpm.mark_rate_limited(rpm.provider_of(entry), quota=True)
+                    elif rpm.looks_rate_limited(diag):
+                        rpm.mark_rate_limited(rpm.provider_of(entry))
+            if parsed:
                 ok = True
-                return (parsed or proc.stdout)[-20000:]
+                return parsed[-20000:]
+            error_text = _opencode_error_text(errors)
+            if error_text:
+                raise RuntimeError(f"opencode error: {error_text[:300]}")
+            if proc.stdout.strip():
+                ok = True
+                return proc.stdout[-20000:]
             raise RuntimeError(f"opencode returned no output: {proc.stderr[-500:] or '(no stderr)'}")
         if runner == "direct":
             provider = load_providers().get(entry.get("provider"), {})
             if not provider.get("apiKey"):
                 raise RuntimeError(f"missing API key for '{entry.get('provider')}': fill in providers.json")
-            response = httpx.post(
-                f"{provider['baseURL'].rstrip('/')}/chat/completions",
-                headers={"Authorization": f"Bearer {provider['apiKey']}"},
-                json={"model": entry.get("model", entry["id"]),
-                      "messages": messages or [{"role": "user", "content": task}]},
-                timeout=timeout_s,
-            )
+            try:
+                response = httpx.post(
+                    f"{provider['baseURL'].rstrip('/')}/chat/completions",
+                    headers={"Authorization": f"Bearer {provider['apiKey']}"},
+                    json={"model": entry.get("model", entry["id"]),
+                          "messages": messages or [{"role": "user", "content": task}]},
+                    timeout=timeout_s,
+                )
+            except httpx.HTTPStatusError as exc:
+                if rpm is not None and exc.response.status_code == 429:
+                    retry_after = exc.response.headers.get("Retry-After")
+                    rpm.mark_rate_limited(rpm.provider_of(entry), float(retry_after) if retry_after else None)
+                raise
             response.raise_for_status()
             body = response.json()
             tokens = (body.get("usage") or {}).get("completion_tokens")

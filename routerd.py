@@ -23,6 +23,7 @@ from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse, St
 from starlette.routing import Route
 
 import router
+import swarm as swarm_mod
 
 try:
     import performance  # noqa: E402  (passive speed measurement; router.py already put opt/ on sys.path)
@@ -31,6 +32,7 @@ except Exception:
 
 PORT = 8788
 VIRTUAL_MODEL = "router/auto"
+VIRTUAL_SWARM = ("swarm", "ultra-swarm", "ultra")
 PANEL_HTML = Path(__file__).resolve().parent / "panel.html"
 NAME_RE = re.compile(r"^[a-z0-9-]{1,32}$")
 
@@ -58,15 +60,29 @@ def resolve_requested(model_name):
     if not model_name or model_name in (VIRTUAL_MODEL, "auto", "router/free-best"):
         return None
     name = model_name.removeprefix("router/")
+    if name.lower() in VIRTUAL_SWARM:
+        return None
     for entry in router.load_registry()["models"]:
         if name in (entry["key"], entry["id"]):
             return entry["key"]
     return None
 
 
+def swarm_mode_of(model_name):
+    name = str(model_name or "").removeprefix("router/").strip().lower()
+    if name == "swarm":
+        return "swarm"
+    if name in ("ultra-swarm", "ultra"):
+        return "ultra"
+    return None
+
+
 async def list_models(request):
     usable = {m["key"] for m in router.usable_models()}
-    data = [{"id": VIRTUAL_MODEL, "object": "model", "owned_by": "kilo-router", "available": True}]
+    data = [{"id": VIRTUAL_MODEL, "object": "model", "owned_by": "kilo-router", "available": True},
+            {"id": "router/swarm", "object": "model", "owned_by": "kilo-router", "available": True},
+            {"id": "router/ultra-swarm", "object": "model", "owned_by": "kilo-router",
+             "available": True}]
     for entry in router.load_registry()["models"]:
         data.append({"id": f"router/{entry['key']}", "object": "model", "owned_by": "kilo-router",
                      "available": entry["key"] in usable})
@@ -123,6 +139,10 @@ async def panel_get_settings(request):
         "measure_performance": settings.get("measure_performance", True),
         "skip_recently_failing": settings.get("skip_recently_failing", True),
         "benchmarks_in_prompt": settings.get("benchmarks_in_prompt", False),
+        "respect_rate_limits": settings.get("respect_rate_limits", True),
+        "rate_limits": settings.get("rate_limits") or {},
+        "swarm_parallel": settings.get("swarm_parallel", 2),
+        "swarm_max_subtasks": settings.get("swarm_max_subtasks", 5),
     }})
 
 
@@ -180,6 +200,41 @@ async def panel_save_settings(request):
         current["skip_recently_failing"] = bool(body["skip_recently_failing"])
     if "benchmarks_in_prompt" in body:
         current["benchmarks_in_prompt"] = bool(body["benchmarks_in_prompt"])
+    if "respect_rate_limits" in body:
+        current["respect_rate_limits"] = bool(body["respect_rate_limits"])
+    if "rate_limits" in body:
+        limits = body["rate_limits"] if isinstance(body["rate_limits"], dict) else {}
+        clean = {}
+        for name, value in limits.items():
+            if not NAME_RE.match(str(name)):
+                return JSONResponse({"error": f"bad provider name in rate_limits: {name}"},
+                                    status_code=400)
+            try:
+                rpm_value = int(value)
+            except (TypeError, ValueError):
+                return JSONResponse({"error": f"rate_limits[{name}] must be a number"},
+                                    status_code=400)
+            if not 1 <= rpm_value <= 1000:
+                return JSONResponse({"error": f"rate_limits[{name}] must be 1..1000"},
+                                    status_code=400)
+            clean[str(name)] = rpm_value
+        current["rate_limits"] = clean
+    if "swarm_parallel" in body:
+        try:
+            value = int(body["swarm_parallel"])
+        except (TypeError, ValueError):
+            return JSONResponse({"error": "swarm_parallel must be a number"}, status_code=400)
+        if not 1 <= value <= 8:
+            return JSONResponse({"error": "swarm_parallel must be 1..8"}, status_code=400)
+        current["swarm_parallel"] = value
+    if "swarm_max_subtasks" in body:
+        try:
+            value = int(body["swarm_max_subtasks"])
+        except (TypeError, ValueError):
+            return JSONResponse({"error": "swarm_max_subtasks must be a number"}, status_code=400)
+        if not 2 <= value <= 8:
+            return JSONResponse({"error": "swarm_max_subtasks must be 2..8"}, status_code=400)
+        current["swarm_max_subtasks"] = value
     save_settings_file(current)
     return await panel_get_settings(request)
 
@@ -189,6 +244,35 @@ async def chat_completions(request):
     messages = body.get("messages", [])
     full_task = task_text(messages)
     routing_state = trim_for_routing(full_task)
+    swarm_mode = swarm_mode_of(body.get("model", ""))
+    if swarm_mode:
+        try:
+            outcome = await run_in_threadpool(swarm_mod.run_swarm, full_task, swarm_mode)
+        except Exception as exc:
+            return JSONResponse({"error": {"message": f"swarm failed: {exc}", "type": "router_error"}},
+                                status_code=502)
+        content = outcome["final"]
+        if router.load_settings().get("answer_footer", True):
+            content = f"{content}\n\n{swarm_mod.build_footer(outcome)}"
+        payload = {
+            "id": "chatcmpl-" + uuid.uuid4().hex[:12],
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": f"{swarm_mode}-swarm",
+            "choices": [{
+                "index": 0,
+                "message": {"role": "assistant", "content": content},
+                "finish_reason": "stop",
+            }],
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+            "router": {"swarm": {"mode": outcome["mode"], "subtasks": outcome["subtasks"],
+                                  "elapsed_s": outcome["elapsed_s"],
+                                  "steps": [{k: v for k, v in s.items() if k != "note"}
+                                            for s in outcome["steps"]]}},
+        }
+        if body.get("stream"):
+            return _stream_payload(payload)
+        return JSONResponse(payload)
     forced = resolve_requested(body.get("model", ""))
     try:
         if forced:
@@ -247,20 +331,24 @@ async def chat_completions(request):
         "router": extra,
     }
     if body.get("stream"):
-        chunk_id = payload["id"]
-
-        async def stream():
-            for delta, finish in (({"role": "assistant"}, None),
-                                  ({"content": content}, None),
-                                  ({}, "stop")):
-                chunk = {"id": chunk_id, "object": "chat.completion.chunk",
-                         "created": payload["created"], "model": payload["model"],
-                         "choices": [{"index": 0, "delta": delta, "finish_reason": finish}]}
-                yield b"data: " + json.dumps(chunk, ensure_ascii=False).encode() + b"\n\n"
-            yield b"data: [DONE]\n\n"
-
-        return StreamingResponse(stream(), media_type="text/event-stream")
+        return _stream_payload(payload)
     return JSONResponse(payload)
+
+
+def _stream_payload(payload):
+    chunk_id = payload["id"]
+
+    async def stream():
+        for delta, finish in (({"role": "assistant"}, None),
+                              ({"content": payload["choices"][0]["message"]["content"]}, None),
+                              ({}, "stop")):
+            chunk = {"id": chunk_id, "object": "chat.completion.chunk",
+                     "created": payload["created"], "model": payload["model"],
+                     "choices": [{"index": 0, "delta": delta, "finish_reason": finish}]}
+            yield b"data: " + json.dumps(chunk, ensure_ascii=False).encode() + b"\n\n"
+        yield b"data: [DONE]\n\n"
+
+    return StreamingResponse(stream(), media_type="text/event-stream")
 
 
 def panel_guard(request):
@@ -509,6 +597,29 @@ async def panel_discovery_refresh(request):
     return JSONResponse({"started": True})
 
 
+async def panel_swarm_run(request):
+    """Synchronous swarm run for the panel: returns the full trace once the swarm finishes
+    (minutes on this hardware — the panel shows a progress state while waiting)."""
+    if not panel_guard(request):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    body = await request.json()
+    task = str(body.get("task", "")).strip()
+    mode = str(body.get("mode", "swarm"))
+    if not task:
+        return JSONResponse({"error": "task is required"}, status_code=400)
+    if mode not in ("swarm", "ultra"):
+        return JSONResponse({"error": "mode must be 'swarm' or 'ultra'"}, status_code=400)
+    try:
+        outcome = await run_in_threadpool(
+            swarm_mod.run_swarm, task, mode,
+            body.get("parallel") or None, body.get("max_subtasks") or None)
+    except Exception as exc:
+        return JSONResponse({"error": {"message": str(exc), "type": "swarm_error"}},
+                            status_code=502)
+    outcome["footer"] = swarm_mod.build_footer(outcome)
+    return JSONResponse(outcome)
+
+
 async def root(request):
     return RedirectResponse("/panel")
 
@@ -531,6 +642,7 @@ app = Starlette(routes=[
     Route("/panel/api/registry/remove", panel_registry_remove, methods=["POST"]),
     Route("/panel/api/discovery", panel_discovery_status),
     Route("/panel/api/discovery/refresh", panel_discovery_refresh, methods=["POST"]),
+    Route("/panel/api/swarm/run", panel_swarm_run, methods=["POST"]),
     Route("/panel/api/providers/{name}/test", panel_test_provider, methods=["POST"]),
 ])
 

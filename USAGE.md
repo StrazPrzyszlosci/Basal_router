@@ -86,6 +86,11 @@ gitignored):
 - **exec timeout** — per-execution timeout, 30..3600 s (default 600)
 - **state language** — `pl` or `en`; the routing prompt language
 - **routing instructions** — blank = the built-in default; paste GEPA-evolved instructions here
+- **respect rate limits** (default on) — per-provider RPM windows (60 s rolling, default 20 RPM,
+  ollama unlimited) + automatic cooldowns on 429s: burst rate limit cools the provider for 60 s
+  (`Retry-After` respected), usage-quota errors (opencode `FreeUsageLimitError`) for 15 minutes
+- **rate limits (JSON)** — per-provider RPM overrides, e.g. `{"opencode": 30}`
+- **swarm parallel workers** (default 2) and **swarm max subtasks** (default 5) — swarm-mode knobs
 
 ### Model registry (panel)
 
@@ -114,6 +119,33 @@ answer.
 The graph routes the task, executes it on the chosen model, then verifies the answer with a basal
 `noul` question; a rejected answer is retried once on `nemotron-ultra`. Output: JSON with
 `decision`, `answer`, `verified`, `attempts`.
+
+## 2b. Swarm modes (swarm.py): basal delegates every step
+
+```bash
+# swarm: basal picks the decomposer, then picks each subagent per subtask, then the synthesizer
+~/basal-env/bin/python swarm.py "porównaj X i Y" --mode swarm --footer
+
+# ultra: plan -> critique (basal-picked critic, one revision round) -> basal-picked swarm manager
+# -> subagents -> synthesis
+~/basal-env/bin/python swarm.py "zaprojektuj migrację bazy" --mode ultra --parallel 2
+
+# the same thing through the OpenAI-compatible endpoint (any OpenAI client):
+curl http://127.0.0.1:8788/v1/chat/completions -H 'content-type: application/json' \
+  -d '{"model": "router/ultra-swarm", "messages": [{"role": "user", "content": "task..."}]}'
+
+# panel: "swarm" card — task, mode, full trace of every basal pick, final answer
+```
+
+Both modes journal every decision: which model basal picked for the decomposer/planner/critic/
+manager/aggregator role and for each subtask, with confidence, RPM waits and fallbacks. The
+synthesizer merges the subagent outputs into the final answer; the footer lists which model
+handled which role.
+
+**RPM respect.** Subagent assignment only considers models whose provider has headroom in the
+rolling 60-second call window (`settings.rate_limits`, default 20 RPM; ollama is unlimited) and is
+not in a 429 cooldown (raised automatically on rate-limit errors, `Retry-After` respected). When
+every provider is exhausted the swarm waits (bounded by ~90 s) before proceeding best-effort.
 
 ## 3. Research loop
 

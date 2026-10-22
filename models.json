@@ -29,7 +29,7 @@
         "description_full": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
         "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 42/100; coding 72/100; agentic 51/100; 3d elo 1316; uicomponent elo 1316.",
-        "display_speed": "Speed (measured passively): median 10.0 s/call over 7 measured calls, ok 100%; tok/s not reported by this runner."
+        "display_speed": "Speed (measured passively): median 10.1 s/call over 10 measured calls, ok 100%; tok/s not reported by this runner."
       }
     },
     {
@@ -193,7 +193,7 @@
         "description_full": "MiMo Flash model for multimodal coding agents and long-context automation",
         "card_source": "manual-v2 EN (roles per real models.dev profiles; facts in meta)",
         "display_benchmarks": "Benchmarks (Artificial Analysis / WebDev Arena via OpenRouter): intelligence 38/100.",
-        "display_speed": "Speed (measured passively): median 8.6 s/call over 2 measured calls, ok 100%; tok/s not reported by this runner."
+        "display_speed": "Speed (measured passively): median 11.1 s/call over 5 measured calls, ok 100%; tok/s not reported by this runner."
       }
     },
     {

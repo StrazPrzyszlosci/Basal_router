@@ -61,6 +61,15 @@ request — no restart. The registry holds max 20 options (an ollama-mode limit)
   <label class="opt">exec timeout [s] <input type="number" id="s-timeout" step="30" min="30" max="3600" style="width:100px"></label>
   <label class="opt">state language <select id="s-lang"><option value="pl">pl</option><option value="en">en</option></select></label>
 </div>
+<div class="row" style="margin-top:10px">
+  <label class="opt"><input type="checkbox" id="s-rpm" checked> respect rate limits (RPM)</label>
+  <label class="opt">swarm parallel workers <input type="number" id="s-swpar" min="1" max="8" style="width:70px" placeholder="2"></label>
+  <label class="opt">swarm max subtasks <input type="number" id="s-swmax" min="2" max="8" style="width:70px" placeholder="5"></label>
+</div>
+<div class="meta" style="margin-top:10px">Rate limits per provider (requests/minute, JSON) — the swarm spreads subagents
+across providers before limits bite; 429s raise a 60s cooldown automatically. Blank fields use the defaults
+(opencode 20 RPM, ollama unlimited).</div>
+<textarea id="s-ratelimits" class="mono" placeholder='{"opencode": 20}'></textarea>
 <div class="meta" style="margin-top:10px"><b>Hermes agent</b> (sandboxed — it never touches your Hermes
 installation): its ONLY automatic job is updating the model registry — every 6 h via cron, or the button
 below: it fetches provider catalogs, picks new free models and writes their role cards. The toggle above
@@ -84,6 +93,20 @@ everything else keeps working without it.</div>
 <h2>model discovery</h2>
 <div class="meta" id="discovery-meta">The registry self-updates from models.dev, the live opencode list and the OpenRouter free catalog; cards for new models are written by a free model. Cron refreshes every 6 hours.</div>
 <div class="row"><button class="ghost" onclick="refreshDiscovery()">Refresh now</button><span class="status" id="discovery-status"></span></div>
+</div>
+
+<div class="card">
+<h2>swarm</h2>
+<div class="meta">basal delegates every step: it picks the model that decomposes the task (ultra: plan → critique → swarm manager first), then AGAIN picks each subagent per subtask — spreading them across providers under RPM limits — and finally the model that synthesizes the answer. Takes minutes; every pick lands in the trace below. Also available as model "router/swarm" / "router/ultra-swarm" on /v1/chat/completions.</div>
+<div class="row">
+  <label class="opt">mode <select id="sw-mode"><option value="swarm">swarm (decompose → subagents → synthesize)</option><option value="ultra">ultra (plan → critique → manage → subagents → synthesize)</option></select></label>
+</div>
+<textarea id="sw-task" placeholder="The task for the swarm…" style="min-height:84px"></textarea>
+<div class="row" style="margin-top:8px">
+  <button id="sw-run" onclick="runSwarm()">Run swarm</button>
+  <span class="status" id="swarm-status"></span>
+</div>
+<div id="swarm-out"></div>
 </div>
 
 <div class="card">
@@ -224,6 +247,11 @@ async function loadSettings() {
   document.getElementById("s-measure").checked = !!s.measure_performance;
   document.getElementById("s-skipfail").checked = !!s.skip_recently_failing;
   document.getElementById("s-benchprompt").checked = !!s.benchmarks_in_prompt;
+  document.getElementById("s-rpm").checked = !!s.respect_rate_limits;
+  document.getElementById("s-swpar").value = s.swarm_parallel ?? "";
+  document.getElementById("s-swmax").value = s.swarm_max_subtasks ?? "";
+  document.getElementById("s-ratelimits").value =
+    s.rate_limits && Object.keys(s.rate_limits).length ? JSON.stringify(s.rate_limits) : "";
   document.getElementById("s-floor").value = s.confidence_floor ?? "";
   document.getElementById("s-timeout").value = s.exec_timeout_s ?? "";
   document.getElementById("s-lang").value = s.state_lang || "pl";
@@ -238,6 +266,9 @@ async function saveSettings() {
   try {
     const floor = parseFloat(document.getElementById("s-floor").value);
     const timeout = parseFloat(document.getElementById("s-timeout").value);
+    const swpar = parseInt(document.getElementById("s-swpar").value);
+    const swmax = parseInt(document.getElementById("s-swmax").value);
+    const limitsRaw = document.getElementById("s-ratelimits").value.trim();
     const body = {answer_footer: document.getElementById("s-footer").checked,
                   log_decisions: document.getElementById("s-log").checked,
                   fallback_enabled: document.getElementById("s-fallback").checked,
@@ -246,16 +277,45 @@ async function saveSettings() {
                   measure_performance: document.getElementById("s-measure").checked,
                   skip_recently_failing: document.getElementById("s-skipfail").checked,
                   benchmarks_in_prompt: document.getElementById("s-benchprompt").checked,
+                  respect_rate_limits: document.getElementById("s-rpm").checked,
                   state_lang: document.getElementById("s-lang").value,
                   default_model: document.getElementById("s-default").value,
                   hermes_model: document.getElementById("s-hermes").value,
                   routing_instructions: document.getElementById("s-instructions").value};
     if (!isNaN(floor)) body.confidence_floor = floor;
     if (!isNaN(timeout)) body.exec_timeout_s = timeout;
+    if (!isNaN(swpar)) body.swarm_parallel = swpar;
+    if (!isNaN(swmax)) body.swarm_max_subtasks = swmax;
+    body.rate_limits = limitsRaw ? JSON.parse(limitsRaw) : {};
     await api("/panel/api/settings", body);
     st.innerHTML = '<span class="ok">saved — applies from the next request</span>';
     await loadSettings();
   } catch (e) { st.innerHTML = `<span class="err">${e}</span>`; }
+}
+async function runSwarm() {
+  const btn = document.getElementById("sw-run");
+  const st = document.getElementById("swarm-status");
+  const out = document.getElementById("swarm-out");
+  const task = document.getElementById("sw-task").value.trim();
+  if (!task) { st.innerHTML = '<span class="err">enter a task first</span>'; return; }
+  btn.disabled = true;
+  st.textContent = "running… basal is delegating every step (minutes on this CPU)";
+  out.innerHTML = "";
+  try {
+    const r = await api("/panel/api/swarm/run", {task: task, mode: document.getElementById("sw-mode").value});
+    const steps = r.steps.map(s =>
+      `<tr><td>${esc(s.role)}</td><td>${s.subtask ? esc(s.subtask) : "—"}</td><td>${esc(s.model_id || s.picked || "")}</td><td>${
+        s.confidence != null ? "conf " + esc(s.confidence) : (s.note || "")}</td><td>${
+        s.deferred ? '<span class="dim">deferred</span>' : ""}${s.rpm_note ? '<span class="dim">' + esc(s.rpm_note) + "</span>" : ""}${
+        s.fallback_errors ? '<span class="err">' + esc(s.fallback_errors.join("; ")) + "</span>" : ""}</td></tr>`).join("");
+    out.innerHTML =
+      `<div class="meta">${esc(r.mode)} · ${esc(r.subtasks)} subtasks · ${esc(r.elapsed_s)} s</div>` +
+      `<table><tr><th>step</th><th>subtask</th><th>basal picked</th><th>confidence</th><th>notes</th></tr>${steps}</table>` +
+      `<div class="meta" style="margin-top:12px"><b>final answer</b></div><div class="card" style="margin:0">${esc(r.final)}</div>`;
+    st.innerHTML = '<span class="ok">done</span>';
+  } catch (e) {
+    st.innerHTML = `<span class="err">${e}</span>`;
+  } finally { btn.disabled = false; }
 }
 async function addProvider() {
   const st = document.getElementById("add-status");
